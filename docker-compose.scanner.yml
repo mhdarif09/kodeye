@@ -1,0 +1,14 @@
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/worker.Dockerfile
+    env_file:
+      - .env
+    environment:
+      SCAN_WORKER_ENABLED: 'true'
+      SCANNER_EXECUTION_MODE: 'local-cli'
+      SCAN_WORKER_TEMP_DIR: '/tmp/kodeye/scans'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    restart: unless-stopped

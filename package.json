@@ -1,0 +1,43 @@
+{
+  "name": "kodeye",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "predev": "pnpm --filter @kodeye/shared build",
+    "dev": "concurrently -n frontend,api,worker -c cyan,green,yellow \"pnpm --filter @kodeye/frontend dev\" \"pnpm --filter @kodeye/api dev\" \"pnpm --filter @kodeye/worker dev\"",
+    "dev:frontend": "pnpm --filter @kodeye/frontend dev",
+    "predev:api": "pnpm --filter @kodeye/shared build",
+    "dev:api": "pnpm --filter @kodeye/api dev",
+    "predev:worker": "pnpm --filter @kodeye/shared build",
+    "dev:worker": "pnpm --filter @kodeye/worker dev",
+    "build": "pnpm --filter @kodeye/shared build && pnpm --filter @kodeye/frontend build && pnpm --filter @kodeye/api build && pnpm --filter @kodeye/worker build",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "deploy:build": "docker compose --env-file .env.production -f docker-compose.prod.yml build",
+    "deploy:up": "docker compose --env-file .env.production -f docker-compose.prod.yml up -d",
+    "deploy:down": "docker compose --env-file .env.production -f docker-compose.prod.yml down",
+    "deploy:restart": "docker compose --env-file .env.production -f docker-compose.prod.yml restart",
+    "deploy:logs": "docker compose --env-file .env.production -f docker-compose.prod.yml logs -f",
+    "deploy:ps": "docker compose --env-file .env.production -f docker-compose.prod.yml ps",
+    "deploy:migrate": "docker compose --env-file .env.production -f docker-compose.prod.yml run --rm api pnpm --filter @kodeye/api prisma:migrate:deploy",
+    "deploy:seed": "docker compose --env-file .env.production -f docker-compose.prod.yml run --rm api pnpm --filter @kodeye/api prisma:seed",
+    "deploy:worker:logs": "docker compose --env-file .env.production -f docker-compose.prod.yml logs -f worker",
+    "deploy:api:logs": "docker compose --env-file .env.production -f docker-compose.prod.yml logs -f api"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "@next/eslint-plugin-next": "^15.5.19",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.22.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.0"
+  }
+}

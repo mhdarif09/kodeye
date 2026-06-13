@@ -1,0 +1,110 @@
+services:
+  mysql:
+    image: mysql:8
+    env_file:
+      - ${KODEYE_ENV_FILE:-.env.production}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - kodeye_internal
+
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    env_file:
+      - ${KODEYE_ENV_FILE:-.env.production}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - '127.0.0.1:3001:3001'
+    volumes:
+      - report_storage:/app/storage/reports
+      - invoice_storage:/app/storage/invoices
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'curl',
+          '--fail',
+          '--silent',
+          'http://127.0.0.1:3001/api/health',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - kodeye_internal
+
+  frontend:
+    build:
+      context: .
+      dockerfile: infra/docker/frontend.Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://backend.kodeye.net/api}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://app.kodeye.net}
+        NEXT_PUBLIC_LANDING_URL: ${NEXT_PUBLIC_LANDING_URL:-https://kodeye.net}
+    env_file:
+      - ${KODEYE_ENV_FILE:-.env.production}
+    environment:
+      NEXT_PUBLIC_API_URL: https://backend.kodeye.net/api
+      NEXT_PUBLIC_APP_URL: https://app.kodeye.net
+      NEXT_PUBLIC_LANDING_URL: https://kodeye.net
+    ports:
+      - '127.0.0.1:3000:3000'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'node -e "fetch(''http://127.0.0.1:3000'').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - kodeye_internal
+
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/worker.Dockerfile
+    env_file:
+      - ${KODEYE_ENV_FILE:-.env.production}
+    environment:
+      SCAN_WORKER_ENABLED: 'true'
+      SCANNER_EXECUTION_MODE: local-cli
+      SCAN_WORKER_TEMP_DIR: /tmp/kodeye/scans
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - worker_tmp:/tmp/kodeye/scans
+    restart: unless-stopped
+    networks:
+      - kodeye_internal
+
+volumes:
+  mysql_data:
+  worker_tmp:
+  report_storage:
+  invoice_storage:
+
+networks:
+  kodeye_internal:
+    driver: bridge

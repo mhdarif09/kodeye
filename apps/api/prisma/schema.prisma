@@ -1,0 +1,755 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum OrganizationRole {
+  OWNER
+  MEMBER
+}
+
+enum RepositoryProvider {
+  MANUAL
+  GITHUB
+}
+
+enum ScanStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+  CANCELED
+}
+
+enum ScanTriggerType {
+  MANUAL
+  GITHUB_PUSH
+  GITHUB_PULL_REQUEST
+}
+
+enum FindingSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  INFO
+  UNKNOWN
+}
+
+enum FindingConfidence {
+  HIGH
+  MEDIUM
+  LOW
+  UNKNOWN
+}
+
+enum FindingStatus {
+  OPEN
+  IGNORED
+  FIXED
+  FALSE_POSITIVE
+}
+
+enum PlanInterval {
+  MONTHLY
+  YEARLY
+  CUSTOM
+}
+
+enum SubscriptionStatus {
+  FREE
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+  SUSPENDED
+  INCOMPLETE
+}
+
+enum PaymentProvider {
+  MIDTRANS
+  PAYPAL
+  MANUAL
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+  CANCELED
+  REFUNDED
+}
+
+enum BillingMode {
+  ONE_TIME
+  RECURRING
+  MANUAL
+}
+
+enum RecurringProvider {
+  MIDTRANS
+  PAYPAL
+}
+
+enum RecurringSubscriptionStatus {
+  PENDING
+  ACTIVE
+  CANCELED
+  SUSPENDED
+  EXPIRED
+  FAILED
+}
+
+enum CouponType {
+  PERCENT
+  FIXED_AMOUNT
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  VOID
+  REFUNDED
+}
+
+enum EnterpriseRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CONTACTED
+}
+
+enum SettingValueType {
+  STRING
+  NUMBER
+  BOOLEAN
+  JSON
+  SECRET
+}
+
+enum SettingCategory {
+  APP
+  GITHUB
+  MIDTRANS
+  PAYPAL
+  BILLING
+  CURRENCY
+  SCANNER
+  REPORT
+  INVOICE
+  SECURITY
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  CLEAR_SECRET
+  TEST_CONNECTION
+  LOGIN_AS_ADMIN
+  SETTINGS_RELOAD
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String   @db.VarChar(255)
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  role         UserRole @default(USER)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  ownedOrganizations     Organization[]          @relation("OrganizationOwner")
+  memberships            OrganizationMember[]
+  githubAccount          GitHubAccount?
+  triggeredScanJobs      ScanJob[]
+  enterprisePlanRequests EnterprisePlanRequest[]
+  updatedSystemSettings   SystemSetting[]
+  updatedSettings         AppSetting[]
+  adminAuditLogs          AdminAuditLog[]
+
+  @@map("users")
+}
+
+model SystemSetting {
+  id              String   @id @default(cuid())
+  key             String   @unique @db.VarChar(150)
+  encryptedValue  String   @map("encrypted_value") @db.LongText
+  updatedByUserId String?  @map("updated_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  updatedBy       User?    @relation(fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([updatedByUserId])
+  @@map("system_settings")
+}
+
+model AppSetting {
+  id              String           @id @default(cuid())
+  key             String           @unique @db.VarChar(255)
+  category        SettingCategory
+  valueType       SettingValueType @map("value_type")
+  value           String?          @db.Text
+  encryptedValue  String?          @map("encrypted_value") @db.Text
+  encryptionIv    String?          @map("encryption_iv") @db.VarChar(255)
+  encryptionTag   String?          @map("encryption_tag") @db.VarChar(255)
+  keyVersion      String?          @map("key_version") @db.VarChar(50)
+  isSecret        Boolean          @default(false) @map("is_secret")
+  isActive        Boolean          @default(true) @map("is_active")
+  description     String?          @db.Text
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  updatedByUserId String?          @map("updated_by_user_id")
+  updatedBy       User?            @relation(fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([category])
+  @@index([updatedByUserId])
+  @@map("app_settings")
+}
+
+model AdminAuditLog {
+  id           String      @id @default(cuid())
+  actorUserId  String?     @map("actor_user_id")
+  action       AuditAction
+  resourceType String      @map("resource_type") @db.VarChar(100)
+  resourceId   String?     @map("resource_id") @db.VarChar(255)
+  resourceKey  String?     @map("resource_key") @db.VarChar(255)
+  ipAddress    String?     @map("ip_address") @db.VarChar(100)
+  userAgent    String?     @map("user_agent") @db.Text
+  metadataJson Json?       @map("metadata_json")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  actor        User?       @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId])
+  @@index([action])
+  @@index([resourceType])
+  @@index([resourceKey])
+  @@map("admin_audit_logs")
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(255)
+  ownerUserId String   @map("owner_user_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  owner                  User                    @relation("OrganizationOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  members                OrganizationMember[]
+  repositories           Repository[]
+  githubInstallations    GitHubInstallation[]
+  scanJobs               ScanJob[]
+  subscription           Subscription?
+  payments               Payment[]
+  invoices               Invoice[]
+  recurringSubscriptions RecurringSubscription[]
+  enterprisePlanRequests EnterprisePlanRequest[]
+
+  @@index([ownerUserId])
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String           @id @default(cuid())
+  organizationId String           @map("organization_id")
+  userId         String           @map("user_id")
+  role           OrganizationRole @default(MEMBER)
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+  @@index([organizationId])
+  @@map("organization_members")
+}
+
+model Repository {
+  id             String             @id @default(cuid())
+  organizationId String             @map("organization_id")
+  provider       RepositoryProvider @default(MANUAL)
+
+  name          String  @db.VarChar(255)
+  fullName      String? @map("full_name") @db.VarChar(255)
+  repoUrl       String? @map("repo_url") @db.VarChar(2048)
+  defaultBranch String  @default("main") @map("default_branch") @db.VarChar(255)
+  isPrivate     Boolean @default(false) @map("is_private")
+
+  githubRepoId               String? @map("github_repo_id") @db.VarChar(255)
+  htmlUrl                    String? @map("html_url") @db.VarChar(2048)
+  autoScanPushEnabled        Boolean @default(true) @map("auto_scan_push_enabled")
+  autoScanPullRequestEnabled Boolean @default(true) @map("auto_scan_pull_request_enabled")
+  isArchived                 Boolean @default(false) @map("is_archived")
+  isConnected                Boolean @default(true) @map("is_connected")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  scanJobs     ScanJob[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([githubRepoId])
+  @@map("repositories")
+}
+
+model GitHubAccount {
+  id           String   @id @default(cuid())
+  userId       String   @unique @map("user_id")
+  githubUserId String   @unique @map("github_user_id") @db.VarChar(255)
+  username     String   @db.VarChar(255)
+  email        String?  @db.VarChar(255)
+  avatarUrl    String?  @map("avatar_url") @db.VarChar(2048)
+  profileUrl   String?  @map("profile_url") @db.VarChar(2048)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("github_accounts")
+}
+
+model GitHubInstallation {
+  id                  String   @id @default(cuid())
+  organizationId      String   @map("organization_id")
+  installationId      String   @unique @map("installation_id") @db.VarChar(255)
+  githubAccountLogin  String   @map("github_account_login") @db.VarChar(255)
+  githubAccountType   String   @map("github_account_type") @db.VarChar(100)
+  targetType          String?  @map("target_type") @db.VarChar(100)
+  permissionsJson     Json?    @map("permissions_json")
+  repositorySelection String?  @map("repository_selection") @db.VarChar(100)
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("github_installations")
+}
+
+model ScanJob {
+  id                String          @id @default(cuid())
+  repositoryId      String          @map("repository_id")
+  organizationId    String          @map("organization_id")
+  triggeredByUserId String?         @map("triggered_by_user_id")
+  triggerType       ScanTriggerType @default(MANUAL) @map("trigger_type")
+  branch            String?         @db.VarChar(255)
+  commitSha         String?         @map("commit_sha") @db.VarChar(255)
+  pullRequestNumber Int?            @map("pull_request_number")
+  githubCheckRunId  String?         @map("github_check_run_id") @db.VarChar(255)
+  githubCheckUrl    String?         @map("github_check_url") @db.VarChar(2048)
+  webhookDeliveryId String?         @map("webhook_delivery_id") @db.VarChar(255)
+  status            ScanStatus      @default(PENDING)
+  errorMessage      String?         @map("error_message") @db.Text
+  startedAt         DateTime?       @map("started_at")
+  finishedAt        DateTime?       @map("finished_at")
+  totalFindings     Int             @default(0) @map("total_findings")
+  criticalCount     Int             @default(0) @map("critical_count")
+  highCount         Int             @default(0) @map("high_count")
+  mediumCount       Int             @default(0) @map("medium_count")
+  lowCount          Int             @default(0) @map("low_count")
+  infoCount         Int             @default(0) @map("info_count")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  repository      Repository   @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  triggeredByUser User?        @relation(fields: [triggeredByUserId], references: [id], onDelete: SetNull)
+  findings        Finding[]
+  scanLogs        ScanLog[]
+  report          Report?
+
+  @@index([repositoryId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([triggeredByUserId])
+  @@index([commitSha])
+  @@index([pullRequestNumber])
+  @@index([githubCheckRunId])
+  @@index([webhookDeliveryId])
+  @@map("scan_jobs")
+}
+
+model GitHubWebhookDelivery {
+  id                 String    @id @default(cuid())
+  deliveryId         String    @unique @map("delivery_id") @db.VarChar(255)
+  eventName          String    @map("event_name") @db.VarChar(100)
+  action             String?   @db.VarChar(100)
+  repositoryFullName String?   @map("repository_full_name") @db.VarChar(255)
+  status             String    @db.VarChar(50)
+  errorMessage       String?   @map("error_message") @db.Text
+  receivedAt         DateTime  @default(now()) @map("received_at")
+  processedAt        DateTime? @map("processed_at")
+
+  @@map("github_webhook_deliveries")
+}
+
+model Finding {
+  id             String            @id @default(cuid())
+  scanJobId      String            @map("scan_job_id")
+  scanner        String            @db.VarChar(100)
+  category       String            @db.VarChar(255)
+  title          String            @db.VarChar(500)
+  description    String?           @db.Text
+  severity       FindingSeverity   @default(UNKNOWN)
+  confidence     FindingConfidence @default(UNKNOWN)
+  filePath       String?           @map("file_path") @db.VarChar(2048)
+  lineStart      Int?              @map("line_start")
+  lineEnd        Int?              @map("line_end")
+  evidenceMasked String?           @map("evidence_masked") @db.Text
+  cwe            String?           @db.VarChar(100)
+  owasp          String?           @db.VarChar(255)
+  impact         String?           @db.Text
+  recommendation String?           @db.Text
+  status         FindingStatus     @default(OPEN)
+  rawJson        Json?             @map("raw_json")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  scanJob ScanJob @relation(fields: [scanJobId], references: [id], onDelete: Cascade)
+
+  @@index([scanJobId])
+  @@index([severity])
+  @@index([scanner])
+  @@index([status])
+  @@map("findings")
+}
+
+model ScanLog {
+  id        String   @id @default(cuid())
+  scanJobId String   @map("scan_job_id")
+  level     String   @db.VarChar(50)
+  message   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  scanJob ScanJob @relation(fields: [scanJobId], references: [id], onDelete: Cascade)
+
+  @@index([scanJobId])
+  @@map("scan_logs")
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  scanJobId   String   @unique @map("scan_job_id")
+  htmlPath    String?  @map("html_path") @db.VarChar(2048)
+  pdfPath     String?  @map("pdf_path") @db.VarChar(2048)
+  jsonPath    String?  @map("json_path") @db.VarChar(2048)
+  generatedAt DateTime @default(now()) @map("generated_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  scanJob ScanJob @relation(fields: [scanJobId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
+
+model Currency {
+  id                  String         @id @default(cuid())
+  code                String         @unique @db.VarChar(3)
+  name                String         @db.VarChar(100)
+  symbol              String         @db.VarChar(10)
+  minorUnit           Int            @default(2) @map("minor_unit")
+  isDefault           Boolean        @default(false) @map("is_default")
+  isActive            Boolean        @default(true) @map("is_active")
+  supportedByMidtrans Boolean        @default(false) @map("supported_by_midtrans")
+  supportedByPaypal   Boolean        @default(false) @map("supported_by_paypal")
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+  planPrices          PlanPrice[]
+  couponAmounts       CouponAmount[]
+
+  @@map("currencies")
+}
+
+model ExchangeRate {
+  id                String   @id @default(cuid())
+  baseCurrencyCode  String   @map("base_currency_code") @db.VarChar(3)
+  quoteCurrencyCode String   @map("quote_currency_code") @db.VarChar(3)
+  rate              Decimal  @db.Decimal(18, 8)
+  source            String   @db.VarChar(100)
+  effectiveAt       DateTime @map("effective_at")
+  expiresAt         DateTime @map("expires_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@unique([baseCurrencyCode, quoteCurrencyCode, source, effectiveAt])
+  @@index([baseCurrencyCode, quoteCurrencyCode, expiresAt])
+  @@map("exchange_rates")
+}
+
+model Plan {
+  id                     String         @id @default(cuid())
+  code                   String         @unique @db.VarChar(100)
+  name                   String         @db.VarChar(255)
+  description            String?        @db.Text
+  basePriceIdr           Int?           @map("base_price_idr")
+  interval               PlanInterval
+  maxRepositories        Int            @map("max_repositories")
+  maxScansPerMonth       Int            @map("max_scans_per_month")
+  enablePdfReport        Boolean        @map("enable_pdf_report")
+  enableGithubAutoScan   Boolean        @map("enable_github_auto_scan")
+  enableRecurring        Boolean        @map("enable_recurring")
+  requiresManualApproval Boolean        @default(false) @map("requires_manual_approval")
+  isEnterprise           Boolean        @default(false) @map("is_enterprise")
+  isActive               Boolean        @default(true) @map("is_active")
+  providerMetadataJson   Json?          @map("provider_metadata_json")
+  createdAt              DateTime       @default(now()) @map("created_at")
+  updatedAt              DateTime       @updatedAt @map("updated_at")
+  prices                 PlanPrice[]
+  subscriptions          Subscription[]
+  payments               Payment[]
+
+  @@map("plans")
+}
+
+model PlanPrice {
+  id           String    @id @default(cuid())
+  planId       String    @map("plan_id")
+  currencyCode String    @map("currency_code") @db.VarChar(3)
+  amount       Int
+  isOverride   Boolean   @default(true) @map("is_override")
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  plan         Plan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  currency     Currency  @relation(fields: [currencyCode], references: [code])
+  payments     Payment[]
+
+  @@unique([planId, currencyCode])
+  @@map("plan_prices")
+}
+
+model Subscription {
+  id                     String                  @id @default(cuid())
+  organizationId         String                  @unique @map("organization_id")
+  planId                 String                  @map("plan_id")
+  currencyCode           String                  @map("currency_code") @db.VarChar(3)
+  status                 SubscriptionStatus
+  billingMode            BillingMode             @default(ONE_TIME) @map("billing_mode")
+  currentPeriodStart     DateTime?               @map("current_period_start")
+  currentPeriodEnd       DateTime?               @map("current_period_end")
+  cancelAtPeriodEnd      Boolean                 @default(false) @map("cancel_at_period_end")
+  externalSubscriptionId String?                 @map("external_subscription_id") @db.VarChar(255)
+  recurringProvider      RecurringProvider?      @map("recurring_provider")
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @updatedAt @map("updated_at")
+  organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan                   Plan                    @relation(fields: [planId], references: [id])
+  invoices               Invoice[]
+  recurringSubscriptions RecurringSubscription[]
+
+  @@map("subscriptions")
+}
+
+model Payment {
+  id                     String          @id @default(cuid())
+  organizationId         String          @map("organization_id")
+  planId                 String          @map("plan_id")
+  planPriceId            String?         @map("plan_price_id")
+  couponId               String?         @map("coupon_id")
+  provider               PaymentProvider
+  status                 PaymentStatus   @default(PENDING)
+  billingMode            BillingMode     @map("billing_mode")
+  amount                 Int
+  subtotalAmount         Int             @map("subtotal_amount")
+  discountAmount         Int             @map("discount_amount")
+  taxableAmount          Int             @map("taxable_amount")
+  taxAmount              Int             @map("tax_amount")
+  totalAmount            Int             @map("total_amount")
+  currencyCode           String          @map("currency_code") @db.VarChar(3)
+  taxRate                Decimal         @map("tax_rate") @db.Decimal(5, 4)
+  taxLabel               String?         @map("tax_label") @db.VarChar(50)
+  exchangeRateSnapshot   Json?           @map("exchange_rate_snapshot")
+  externalOrderId        String?         @unique @map("external_order_id") @db.VarChar(255)
+  externalTransactionId  String?         @map("external_transaction_id") @db.VarChar(255)
+  externalSubscriptionId String?         @map("external_subscription_id") @db.VarChar(255)
+  checkoutUrl            String?         @map("checkout_url") @db.VarChar(2048)
+  snapToken              String?         @map("snap_token") @db.VarChar(2048)
+  paidAt                 DateTime?       @map("paid_at")
+  expiredAt              DateTime?       @map("expired_at")
+  rawResponseJson        Json?           @map("raw_response_json")
+  createdAt              DateTime        @default(now()) @map("created_at")
+  updatedAt              DateTime        @updatedAt @map("updated_at")
+  organization           Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan                   Plan            @relation(fields: [planId], references: [id])
+  planPrice              PlanPrice?      @relation(fields: [planPriceId], references: [id])
+  coupon                 Coupon?         @relation(fields: [couponId], references: [id])
+  invoice                Invoice?
+  couponUsage            CouponUsage?
+
+  @@index([organizationId, createdAt])
+  @@map("payments")
+}
+
+model Coupon {
+  id                String         @id @default(cuid())
+  code              String         @unique @db.VarChar(100)
+  name              String         @db.VarChar(255)
+  type              CouponType
+  percentOff        Decimal?       @map("percent_off") @db.Decimal(5, 2)
+  maxRedemptions    Int?           @map("max_redemptions")
+  redeemedCount     Int            @default(0) @map("redeemed_count")
+  validFrom         DateTime?      @map("valid_from")
+  validUntil        DateTime?      @map("valid_until")
+  appliesToPlanCode String?        @map("applies_to_plan_code") @db.VarChar(100)
+  isActive          Boolean        @default(true) @map("is_active")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  amounts           CouponAmount[]
+  usages            CouponUsage[]
+  payments          Payment[]
+
+  @@map("coupons")
+}
+
+model CouponAmount {
+  id           String   @id @default(cuid())
+  couponId     String   @map("coupon_id")
+  currencyCode String   @map("currency_code") @db.VarChar(3)
+  amountOff    Int      @map("amount_off")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  coupon       Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  currency     Currency @relation(fields: [currencyCode], references: [code])
+
+  @@unique([couponId, currencyCode])
+  @@map("coupon_amounts")
+}
+
+model CouponUsage {
+  id             String   @id @default(cuid())
+  couponId       String   @map("coupon_id")
+  paymentId      String   @unique @map("payment_id")
+  organizationId String   @map("organization_id")
+  redeemedAt     DateTime @default(now()) @map("redeemed_at")
+  discountAmount Int      @map("discount_amount")
+  currencyCode   String   @map("currency_code") @db.VarChar(3)
+  coupon         Coupon   @relation(fields: [couponId], references: [id])
+  payment        Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([couponId, organizationId])
+  @@map("coupon_usages")
+}
+
+model Invoice {
+  id                   String            @id @default(cuid())
+  invoiceNumber        String            @unique @map("invoice_number") @db.VarChar(100)
+  organizationId       String            @map("organization_id")
+  paymentId            String?           @unique @map("payment_id")
+  subscriptionId       String?           @map("subscription_id")
+  status               InvoiceStatus
+  currencyCode         String            @map("currency_code") @db.VarChar(3)
+  subtotalAmount       Int               @map("subtotal_amount")
+  discountAmount       Int               @map("discount_amount")
+  taxableAmount        Int               @map("taxable_amount")
+  taxAmount            Int               @map("tax_amount")
+  totalAmount          Int               @map("total_amount")
+  taxRate              Decimal           @map("tax_rate") @db.Decimal(5, 4)
+  taxLabel             String?           @map("tax_label") @db.VarChar(50)
+  exchangeRateSnapshot Json?             @map("exchange_rate_snapshot")
+  issuedAt             DateTime          @default(now()) @map("issued_at")
+  dueAt                DateTime?         @map("due_at")
+  paidAt               DateTime?         @map("paid_at")
+  pdfPath              String?           @map("pdf_path") @db.VarChar(2048)
+  htmlPath             String?           @map("html_path") @db.VarChar(2048)
+  metadataJson         Json?             @map("metadata_json")
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+  organization         Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  payment              Payment?          @relation(fields: [paymentId], references: [id])
+  subscription         Subscription?     @relation(fields: [subscriptionId], references: [id])
+  lineItems            InvoiceLineItem[]
+
+  @@index([organizationId, issuedAt])
+  @@map("invoices")
+}
+
+model InvoiceLineItem {
+  id           String   @id @default(cuid())
+  invoiceId    String   @map("invoice_id")
+  description  String   @db.VarChar(500)
+  quantity     Int      @default(1)
+  unitAmount   Int      @map("unit_amount")
+  totalAmount  Int      @map("total_amount")
+  currencyCode String   @map("currency_code") @db.VarChar(3)
+  createdAt    DateTime @default(now()) @map("created_at")
+  invoice      Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_line_items")
+}
+
+model RecurringSubscription {
+  id                     String                      @id @default(cuid())
+  organizationId         String                      @map("organization_id")
+  subscriptionId         String                      @map("subscription_id")
+  provider               RecurringProvider
+  status                 RecurringSubscriptionStatus
+  currencyCode           String                      @map("currency_code") @db.VarChar(3)
+  externalSubscriptionId String                      @unique @map("external_subscription_id") @db.VarChar(255)
+  externalCustomerId     String?                     @map("external_customer_id") @db.VarChar(255)
+  externalPlanId         String?                     @map("external_plan_id") @db.VarChar(255)
+  externalProductId      String?                     @map("external_product_id") @db.VarChar(255)
+  startedAt              DateTime?                   @map("started_at")
+  nextBillingAt          DateTime?                   @map("next_billing_at")
+  canceledAt             DateTime?                   @map("canceled_at")
+  rawResponseJson        Json?                       @map("raw_response_json")
+  createdAt              DateTime                    @default(now()) @map("created_at")
+  updatedAt              DateTime                    @updatedAt @map("updated_at")
+  organization           Organization                @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  subscription           Subscription                @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("recurring_subscriptions")
+}
+
+model PaymentWebhookEvent {
+  id                     String          @id @default(cuid())
+  provider               PaymentProvider
+  eventId                String?         @map("event_id") @db.VarChar(255)
+  externalOrderId        String?         @map("external_order_id") @db.VarChar(255)
+  externalSubscriptionId String?         @map("external_subscription_id") @db.VarChar(255)
+  eventType              String?         @map("event_type") @db.VarChar(255)
+  status                 String          @db.VarChar(50)
+  payloadJson            Json?           @map("payload_json")
+  errorMessage           String?         @map("error_message") @db.Text
+  receivedAt             DateTime        @default(now()) @map("received_at")
+  processedAt            DateTime?       @map("processed_at")
+
+  @@unique([provider, eventId])
+  @@map("payment_webhook_events")
+}
+
+model EnterprisePlanRequest {
+  id                     String                  @id @default(cuid())
+  organizationId         String                  @map("organization_id")
+  requesterUserId        String                  @map("requester_user_id")
+  companyName            String                  @map("company_name") @db.VarChar(255)
+  contactEmail           String                  @map("contact_email") @db.VarChar(255)
+  preferredCurrencyCode  String?                 @map("preferred_currency_code") @db.VarChar(3)
+  message                String?                 @db.Text
+  requestedRepositories  Int?                    @map("requested_repositories")
+  requestedScansPerMonth Int?                    @map("requested_scans_per_month")
+  status                 EnterpriseRequestStatus @default(PENDING)
+  adminNote              String?                 @map("admin_note") @db.Text
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @updatedAt @map("updated_at")
+  organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  requester              User                    @relation(fields: [requesterUserId], references: [id])
+
+  @@index([organizationId, status])
+  @@map("enterprise_plan_requests")
+}

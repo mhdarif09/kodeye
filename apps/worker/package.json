@@ -1,0 +1,23 @@
+{
+  "name": "@kodeye/worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@kodeye/shared": "workspace:*",
+    "@prisma/client": "^6.4.1",
+    "dotenv": "^16.4.7",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@types/jsonwebtoken": "^9.0.9",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
