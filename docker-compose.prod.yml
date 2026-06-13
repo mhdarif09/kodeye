@@ -33,6 +33,7 @@ services:
     volumes:
       - report_storage:/app/storage/reports
       - invoice_storage:/app/storage/invoices
+      - ${GITHUB_APP_PRIVATE_KEY_HOST_PATH:-/opt/kodeye/secrets/github-app-private-key.pem}:/run/secrets/github-app-private-key.pem:ro
     healthcheck:
       test:
         [
