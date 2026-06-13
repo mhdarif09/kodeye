@@ -14,8 +14,10 @@ const workerSettingKeys = [
   'SCAN_WORKER_TEMP_DIR',
   'SCANNER_EXECUTION_MODE',
   'SCANNER_SEMGREP_BIN',
+  'SCANNER_SEMGREP_CONFIGS',
   'SCANNER_GITLEAKS_BIN',
   'SCANNER_TRIVY_BIN',
+  'SCANNER_TRIVY_SCANNERS',
   'SCANNER_TIMEOUT_MS',
 ] as const;
 
@@ -87,8 +89,16 @@ export async function applyDashboardSettings(
       environment.scannerTimeoutMs,
     ),
     semgrepBin: values.get('SCANNER_SEMGREP_BIN') ?? environment.semgrepBin,
+    semgrepConfigs: listValue(
+      values.get('SCANNER_SEMGREP_CONFIGS'),
+      environment.semgrepConfigs,
+    ),
     tempDir: values.get('SCAN_WORKER_TEMP_DIR') ?? environment.tempDir,
     trivyBin: values.get('SCANNER_TRIVY_BIN') ?? environment.trivyBin,
+    trivyScanners: listValue(
+      values.get('SCANNER_TRIVY_SCANNERS'),
+      environment.trivyScanners,
+    ),
   };
 }
 
@@ -136,4 +146,13 @@ function executionMode(
 ): ScannerExecutionMode {
   if (!value) return fallback;
   return value === 'local-cli' ? 'local-cli' : 'disabled';
+}
+
+function listValue(value: string | undefined, fallback: string[]) {
+  if (!value) return fallback;
+  const values = value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return values.length ? values : fallback;
 }

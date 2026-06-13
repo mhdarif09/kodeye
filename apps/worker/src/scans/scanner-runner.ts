@@ -68,8 +68,7 @@ function scannerDefinition(
     return {
       args: [
         'scan',
-        '--config',
-        'p/security-audit',
+        ...environment.semgrepConfigs.flatMap((config) => ['--config', config]),
         '--json',
         '--output',
         outputPath,
@@ -97,7 +96,7 @@ function scannerDefinition(
     args: [
       'fs',
       '--scanners',
-      'vuln,misconfig',
+      environment.trivyScanners.join(','),
       '--format',
       'json',
       '--output',

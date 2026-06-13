@@ -8,8 +8,10 @@ export interface WorkerEnvironment {
   scannerExecutionMode: ScannerExecutionMode;
   scannerTimeoutMs: number;
   semgrepBin: string;
+  semgrepConfigs: string[];
   gitleaksBin: string;
   trivyBin: string;
+  trivyScanners: string[];
   githubAppId?: string;
   githubAppPrivateKeyPath?: string;
   githubCheckName: string;
@@ -19,6 +21,14 @@ export interface WorkerEnvironment {
 function numberValue(name: string, fallback: number): number {
   const parsed = Number(process.env[name] ?? fallback);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function listValue(name: string, fallback: string[]): string[] {
+  const values = (process.env[name] ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  return values.length ? values : fallback;
 }
 
 export function loadWorkerEnvironment(): WorkerEnvironment {
@@ -35,9 +45,18 @@ export function loadWorkerEnvironment(): WorkerEnvironment {
     pollIntervalMs: numberValue('SCAN_WORKER_POLL_INTERVAL_MS', 5000),
     scanWorkerEnabled: process.env.SCAN_WORKER_ENABLED === 'true',
     scannerExecutionMode: mode === 'local-cli' ? 'local-cli' : 'disabled',
-    scannerTimeoutMs: numberValue('SCANNER_TIMEOUT_MS', 300000),
+    scannerTimeoutMs: numberValue('SCANNER_TIMEOUT_MS', 900000),
     semgrepBin: process.env.SCANNER_SEMGREP_BIN ?? 'semgrep',
+    semgrepConfigs: listValue('SCANNER_SEMGREP_CONFIGS', [
+      'p/security-audit',
+      'p/owasp-top-ten',
+    ]),
     tempDir: process.env.SCAN_WORKER_TEMP_DIR ?? './tmp/scans',
     trivyBin: process.env.SCANNER_TRIVY_BIN ?? 'trivy',
+    trivyScanners: listValue('SCANNER_TRIVY_SCANNERS', [
+      'vuln',
+      'misconfig',
+      'secret',
+    ]),
   };
 }

@@ -405,6 +405,17 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     },
   ),
   setting(
+    'AUTO_SCAN_ON_SYNC_ENABLED',
+    SCANNER,
+    BOOLEAN,
+    'Audit On GitHub Sync',
+    'Queue an initial full-repository audit after a GitHub repository is connected.',
+    {
+      defaultValue: 'true',
+      exampleValue: 'true',
+    },
+  ),
+  setting(
     'SCAN_WORKER_POLL_INTERVAL_MS',
     SCANNER,
     NUMBER,
@@ -451,6 +462,17 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     },
   ),
   setting(
+    'SCANNER_SEMGREP_CONFIGS',
+    SCANNER,
+    STRING,
+    'Semgrep Rulesets',
+    'Comma-separated Semgrep Registry rulesets used for SAST and OWASP analysis.',
+    {
+      defaultValue: 'p/security-audit,p/owasp-top-ten',
+      exampleValue: 'p/security-audit,p/owasp-top-ten',
+    },
+  ),
+  setting(
     'SCANNER_GITLEAKS_BIN',
     SCANNER,
     STRING,
@@ -473,14 +495,25 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     },
   ),
   setting(
+    'SCANNER_TRIVY_SCANNERS',
+    SCANNER,
+    STRING,
+    'Trivy Scanners',
+    'Comma-separated Trivy filesystem scanners.',
+    {
+      defaultValue: 'vuln,misconfig,secret',
+      exampleValue: 'vuln,misconfig,secret',
+    },
+  ),
+  setting(
     'SCANNER_TIMEOUT_MS',
     SCANNER,
     NUMBER,
     'Scanner Timeout',
     'Scanner timeout in ms.',
     {
-      defaultValue: '300000',
-      exampleValue: '300000',
+      defaultValue: '900000',
+      exampleValue: '900000',
     },
   ),
 

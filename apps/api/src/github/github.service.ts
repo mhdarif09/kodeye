@@ -12,12 +12,14 @@ import type { GitHubInstallCallbackDto } from './dto/github-install-callback.dto
 import type { GitHubRepositoriesQueryDto } from './dto/github-repositories-query.dto';
 import type { SyncGitHubRepositoriesDto } from './dto/sync-github-repositories.dto';
 import { GitHubAppService } from './github-app.service';
+import { GitHubInitialAuditService } from './github-initial-audit.service';
 import { BillingService } from '../billing/services/billing.service';
 
 @Injectable()
 export class GitHubService {
   constructor(
     private readonly githubAppService: GitHubAppService,
+    private readonly initialAudit: GitHubInitialAuditService,
     private readonly organizationsService: OrganizationsService,
     private readonly prisma: PrismaService,
     private readonly billing: BillingService,
@@ -175,17 +177,26 @@ export class GitHubService {
         provider: RepositoryProvider.GITHUB,
         repoUrl: githubRepository.clone_url || githubRepository.html_url,
       };
-      syncedRepositories.push(
-        existingRepository
-          ? await this.prisma.repository.update({
-              data,
-              where: { id: existingRepository.id },
-            })
-          : await (async () => {
-              await this.billing.assertLimits(dto.organizationId, 'repository');
-              return this.prisma.repository.create({ data });
-            })(),
-      );
+      const shouldQueueInitialAudit =
+        !existingRepository ||
+        !existingRepository.isConnected ||
+        !(await this.prisma.scanJob.findFirst({
+          select: { id: true },
+          where: { repositoryId: existingRepository.id },
+        }));
+      const syncedRepository = existingRepository
+        ? await this.prisma.repository.update({
+            data,
+            where: { id: existingRepository.id },
+          })
+        : await (async () => {
+            await this.billing.assertLimits(dto.organizationId, 'repository');
+            return this.prisma.repository.create({ data });
+          })();
+      syncedRepositories.push(syncedRepository);
+      if (shouldQueueInitialAudit) {
+        await this.initialAudit.queue(syncedRepository.id);
+      }
     }
 
     return syncedRepositories;

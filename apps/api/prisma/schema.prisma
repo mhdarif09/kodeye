@@ -33,6 +33,7 @@ enum ScanStatus {
 
 enum ScanTriggerType {
   MANUAL
+  GITHUB_SYNC
   GITHUB_PUSH
   GITHUB_PULL_REQUEST
 }

@@ -19,7 +19,7 @@ export interface ScanJob {
   repositoryId: string;
   organizationId: string;
   triggeredByUserId: string | null;
-  triggerType: 'MANUAL' | 'GITHUB_PUSH' | 'GITHUB_PULL_REQUEST';
+  triggerType: 'MANUAL' | 'GITHUB_SYNC' | 'GITHUB_PUSH' | 'GITHUB_PULL_REQUEST';
   branch: string | null;
   commitSha: string | null;
   pullRequestNumber: number | null;

@@ -18,6 +18,7 @@ export interface NormalizedFinding {
   description?: string;
   evidenceMasked?: string;
   filePath?: string;
+  impact?: string;
   lineEnd?: number;
   lineStart?: number;
   owasp?: string;
@@ -58,6 +59,8 @@ function normalizeGitleaksFinding(
     description: 'A potential secret was detected in the repository.',
     evidenceMasked: maskSecret(secret),
     filePath: text(raw.File),
+    impact:
+      'Exposed credentials can allow unauthorized access to systems, data, or third-party services.',
     lineEnd: numberValue(raw.EndLine),
     lineStart: numberValue(raw.StartLine),
     rawJson: {
@@ -84,16 +87,18 @@ function normalizeSemgrepFinding(
   const metadata = recordValue(extra.metadata);
   const severity = text(extra.severity);
   const message = text(extra.message);
+  const cwe = metadataText(metadata.cwe);
   return {
     category: metadataText(metadata.category) ?? 'SAST',
     confidence: FindingConfidence.UNKNOWN,
-    cwe: metadataText(metadata.cwe),
+    cwe,
     description: message,
     evidenceMasked: safeCodeEvidence(text(extra.lines)),
     filePath: text(raw.path),
     lineEnd: numberValue(recordValue(raw.end).line),
     lineStart: numberValue(recordValue(raw.start).line),
-    owasp: metadataText(metadata.owasp),
+    impact: metadataText(metadata.impact),
+    owasp: metadataText(metadata.owasp) ?? inferOwasp(cwe),
     rawJson: {
       check_id: text(raw.check_id) ?? '',
       path: text(raw.path) ?? '',
@@ -123,6 +128,9 @@ function normalizeTrivyOutput(output: unknown): NormalizedFinding[] {
         normalizeTrivyMisconfiguration(recordValue(misconfiguration), target),
       );
     }
+    for (const secret of arrayValue(result.Secrets)) {
+      findings.push(normalizeTrivySecret(recordValue(secret), target));
+    }
   }
   return findings;
 }
@@ -134,12 +142,16 @@ function normalizeTrivyVulnerability(
   const fixedVersion = text(raw.FixedVersion);
   const vulnerabilityId = text(raw.VulnerabilityID) ?? 'Unknown vulnerability';
   const packageName = text(raw.PkgName);
+  const cwe = arrayText(raw.CweIDs);
   return {
     category: 'Dependency Vulnerability',
     confidence: FindingConfidence.UNKNOWN,
-    cwe: arrayText(raw.CweIDs),
+    cwe,
     description: truncate(text(raw.Description)),
     filePath: target,
+    impact:
+      'A vulnerable dependency may expose the application to known attacks when the affected code path is reachable.',
+    owasp: inferOwasp(cwe),
     rawJson: sanitizeTrivyRaw(raw, target),
     recommendation: fixedVersion
       ? `Upgrade package to fixed version: ${fixedVersion}`
@@ -162,8 +174,11 @@ function normalizeTrivyMisconfiguration(
     confidence: FindingConfidence.UNKNOWN,
     description: truncate(text(raw.Description)),
     filePath: target,
+    impact:
+      'Insecure configuration can expose services, data, or deployment infrastructure.',
     lineEnd: numberValue(cause.EndLine),
     lineStart: numberValue(cause.StartLine),
+    owasp: 'OWASP Top 10 2021 A05: Security Misconfiguration',
     rawJson: sanitizeTrivyRaw(raw, target),
     recommendation:
       text(raw.Resolution) ??
@@ -172,6 +187,38 @@ function normalizeTrivyMisconfiguration(
     severity: trivySeverity(text(raw.Severity)),
     status: FindingStatus.OPEN,
     title: text(raw.Title) ?? text(raw.ID) ?? 'Potential misconfiguration',
+  };
+}
+
+function normalizeTrivySecret(
+  raw: Record<string, unknown>,
+  target?: string,
+): NormalizedFinding {
+  const secret = text(raw.Match) ?? text(raw.Code) ?? '';
+  return {
+    category: 'Secret Leak',
+    confidence: FindingConfidence.HIGH,
+    description:
+      'Trivy detected a potential credential or secret in the repository.',
+    evidenceMasked: maskSecret(secret),
+    filePath: target,
+    impact:
+      'Exposed credentials can allow unauthorized access to systems, data, or third-party services.',
+    lineEnd: numberValue(raw.EndLine),
+    lineStart: numberValue(raw.StartLine),
+    owasp: 'OWASP Top 10 2021 A02: Cryptographic Failures',
+    rawJson: {
+      Category: text(raw.Category) ?? '',
+      RuleID: text(raw.RuleID) ?? '',
+      Severity: text(raw.Severity) ?? 'UNKNOWN',
+      Target: target ?? '',
+    },
+    recommendation:
+      'Rotate the exposed credential, remove it from source control, and use a secret manager or environment variable.',
+    scanner: 'trivy',
+    severity: trivySeverity(text(raw.Severity)),
+    status: FindingStatus.OPEN,
+    title: text(raw.Title) ?? text(raw.RuleID) ?? 'Potential leaked secret',
   };
 }
 
@@ -224,6 +271,42 @@ function arrayText(value: unknown): string | undefined {
     : undefined;
 }
 
+function inferOwasp(cwe?: string): string | undefined {
+  if (!cwe) return undefined;
+  const mappings: Array<[RegExp, string]> = [
+    [
+      /CWE-(22|23|35|59|200|201|219|264|284|285|352|639)/i,
+      'OWASP Top 10 2021 A01: Broken Access Control',
+    ],
+    [
+      /CWE-(261|310|311|312|319|321|322|323|324|325|326|327|328|329|330|331|798)/i,
+      'OWASP Top 10 2021 A02: Cryptographic Failures',
+    ],
+    [
+      /CWE-(74|77|78|79|80|83|87|88|89|90|91|93|94|95|96|97|564|917)/i,
+      'OWASP Top 10 2021 A03: Injection',
+    ],
+    [
+      /CWE-(16|209|611|614|756|942|1004)/i,
+      'OWASP Top 10 2021 A05: Security Misconfiguration',
+    ],
+    [
+      /CWE-(287|288|290|294|295|297|300|302|304|306|307|308|384|521|613|620)/i,
+      'OWASP Top 10 2021 A07: Identification and Authentication Failures',
+    ],
+    [
+      /CWE-(345|353|426|494|502|565|829)/i,
+      'OWASP Top 10 2021 A08: Software and Data Integrity Failures',
+    ],
+    [
+      /CWE-(117|223|532|778)/i,
+      'OWASP Top 10 2021 A09: Security Logging and Monitoring Failures',
+    ],
+    [/CWE-918/i, 'OWASP Top 10 2021 A10: Server-Side Request Forgery'],
+  ];
+  return mappings.find(([pattern]) => pattern.test(cwe))?.[1];
+}
+
 function clampFinding(finding: NormalizedFinding): NormalizedFinding {
   return {
     ...finding,
@@ -231,6 +314,7 @@ function clampFinding(finding: NormalizedFinding): NormalizedFinding {
     cwe: finding.cwe?.slice(0, 100),
     evidenceMasked: finding.evidenceMasked?.slice(0, MAX_TEXT),
     filePath: finding.filePath?.slice(0, 2048),
+    impact: finding.impact?.slice(0, MAX_TEXT),
     owasp: finding.owasp?.slice(0, 255),
     scanner: finding.scanner.slice(0, 100),
     title: finding.title.slice(0, 500),

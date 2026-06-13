@@ -5,10 +5,14 @@ import type {
   GitHubWebhookPayload,
   WebhookRepository,
 } from '../types/github-webhook-payload.type';
+import { GitHubInitialAuditService } from '../../github-initial-audit.service';
 
 @Injectable()
 export class InstallationRepositoriesEventHandler {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly initialAudit: GitHubInitialAuditService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async handle(payload: GitHubWebhookPayload) {
     if (!payload.installation) return 'ignored';
@@ -18,7 +22,11 @@ export class InstallationRepositoriesEventHandler {
     if (!installation) return 'ignored';
 
     for (const repository of payload.repositories_added ?? []) {
-      await this.upsert(installation.organizationId, repository);
+      const syncedRepository = await this.upsert(
+        installation.organizationId,
+        repository,
+      );
+      await this.initialAudit.queue(syncedRepository.id);
     }
     const removedIds = (payload.repositories_removed ?? []).map((item) =>
       item.id.toString(),

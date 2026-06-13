@@ -166,6 +166,7 @@ function Count({
 }
 
 function triggerLabel(trigger: ScanJob['triggerType']) {
+  if (trigger === 'GITHUB_SYNC') return 'GitHub Initial Audit';
   if (trigger === 'GITHUB_PUSH') return 'GitHub Push';
   if (trigger === 'GITHUB_PULL_REQUEST') return 'GitHub Pull Request';
   return 'Manual';

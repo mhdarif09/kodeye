@@ -14,6 +14,7 @@ import {
   normalizeScannerOutput,
   type NormalizedFinding,
 } from './finding-normalizer';
+import { inspectAuditScope } from './audit-scope';
 import { cloneGitHubRepository } from './github-repository-cloner';
 import { runScanner, type ScannerName } from './scanner-runner';
 import { countSeverities } from './severity-counter';
@@ -89,6 +90,12 @@ export class ScanProcessor {
         timeoutMs: this.environment.scannerTimeoutMs,
       });
       await this.log(scan.id, 'success', 'clone completed');
+      const scope = await inspectAuditScope(repositoryPath);
+      await this.log(
+        scan.id,
+        scope.truncated ? 'warn' : 'info',
+        `full working-tree audit scope: ${scope.files} files across ${scope.directories} directories; top extensions: ${scope.topExtensions.join(', ') || 'none'}${scope.truncated ? ' (inventory truncated)' : ''}`,
+      );
 
       const allFindings: NormalizedFinding[] = [];
       let successfulScanners = 0;

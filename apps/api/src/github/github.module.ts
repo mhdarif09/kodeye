@@ -8,6 +8,7 @@ import { GitHubAuthController } from './github-auth.controller';
 import { GitHubOAuthService } from './github-oauth.service';
 import { GitHubController } from './github.controller';
 import { GitHubService } from './github.service';
+import { GitHubInitialAuditService } from './github-initial-audit.service';
 import { GitHubChecksService } from './checks/github-checks.service';
 import { GitHubWebhookController } from './webhook/github-webhook.controller';
 import { GitHubWebhookService } from './webhook/github-webhook.service';
@@ -41,6 +42,7 @@ import { BillingModule } from '../billing/billing.module';
   providers: [
     GitHubAppService,
     GitHubChecksService,
+    GitHubInitialAuditService,
     GitHubOAuthService,
     GitHubService,
     GitHubWebhookService,

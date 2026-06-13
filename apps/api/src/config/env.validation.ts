@@ -145,13 +145,16 @@ class EnvironmentVariables {
   @IsOptional() @IsUrl({ require_tld: false }) API_URL?: string;
   @IsOptional() @IsString() CORS_ORIGIN?: string;
   @IsOptional() @IsString() SCAN_WORKER_ENABLED?: string;
+  @IsOptional() @IsString() AUTO_SCAN_ON_SYNC_ENABLED?: string;
   @IsOptional() @IsString() SCAN_WORKER_POLL_INTERVAL_MS?: string;
   @IsOptional() @IsString() SCAN_WORKER_MAX_CONCURRENCY?: string;
   @IsOptional() @IsString() SCAN_WORKER_TEMP_DIR?: string;
   @IsOptional() @IsString() SCANNER_EXECUTION_MODE?: string;
   @IsOptional() @IsString() SCANNER_SEMGREP_BIN?: string;
+  @IsOptional() @IsString() SCANNER_SEMGREP_CONFIGS?: string;
   @IsOptional() @IsString() SCANNER_GITLEAKS_BIN?: string;
   @IsOptional() @IsString() SCANNER_TRIVY_BIN?: string;
+  @IsOptional() @IsString() SCANNER_TRIVY_SCANNERS?: string;
   @IsOptional() @IsString() SCANNER_TIMEOUT_MS?: string;
   @IsOptional() @IsString() RATE_LIMIT_ENABLED?: string;
   @IsOptional() @IsString() RATE_LIMIT_WINDOW_MS?: string;
