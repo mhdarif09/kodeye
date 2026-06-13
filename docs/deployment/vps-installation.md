@@ -65,6 +65,15 @@ docker compose --env-file .env.production -f docker-compose.prod.yml up -d
 
 `prisma migrate deploy` dipakai di production; jangan memakai `migrate dev`.
 
+Jika build sebelumnya gagal saat mengunduh scanner worker, tarik perubahan terbaru
+dan build ulang worker tanpa cache sebelum melanjutkan:
+
+```bash
+git pull
+docker compose --env-file .env.production -f docker-compose.prod.yml build --no-cache worker
+docker compose --env-file .env.production -f docker-compose.prod.yml build
+```
+
 ## Verifikasi
 
 ```bash
