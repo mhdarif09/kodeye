@@ -35,10 +35,10 @@ RUN apt-get update \
     && corepack enable \
     && corepack prepare pnpm@9.15.9 --activate
 
-COPY --from=build /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/apps/api ./apps/api
-COPY --from=build /app/packages/shared ./packages/shared
+COPY --chown=node:node --from=build /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
+COPY --chown=node:node --from=build /app/node_modules ./node_modules
+COPY --chown=node:node --from=build /app/apps/api ./apps/api
+COPY --chown=node:node --from=build /app/packages/shared ./packages/shared
 
 RUN mkdir -p /app/storage/reports /app/storage/invoices \
     && chown -R node:node /app/storage
