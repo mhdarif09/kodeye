@@ -15,7 +15,10 @@ import {
   type NormalizedFinding,
 } from './finding-normalizer';
 import { inspectAuditScope } from './audit-scope';
-import { cloneGitHubRepository } from './github-repository-cloner';
+import {
+  cloneGitHubRepository,
+  clonePublicGitHubRepository,
+} from './github-repository-cloner';
 import { runScanner, type ScannerName } from './scanner-runner';
 import { countSeverities } from './severity-counter';
 
@@ -52,43 +55,62 @@ export class ScanProcessor {
         where: { id: scan.id },
       });
       if (!detail) throw new Error('Scan job not found');
-      if (detail.repository.provider !== RepositoryProvider.GITHUB) {
-        throw new Error('Only GitHub repositories can be scanned');
-      }
-      if (!detail.repository.fullName) {
-        throw new Error('GitHub repository full name is missing');
-      }
+      let installationId: string | null = null;
+      if (detail.repository.provider === RepositoryProvider.GITHUB) {
+        if (!detail.repository.fullName) {
+          throw new Error('GitHub repository full name is missing');
+        }
+        await this.log(scan.id, 'info', 'finding github installation');
+        const installation = await this.prisma.gitHubInstallation.findFirst({
+          where: { organizationId: detail.organizationId },
+        });
+        if (!installation) {
+          throw new Error(
+            'GitHub installation not found for this organization.',
+          );
+        }
+        installationId = installation.installationId;
+        await this.updateCheck(detail, installationId, {
+          status: 'in_progress',
+          summary:
+            'Kodeye is analyzing this commit for potential security findings.',
+        });
 
-      await this.log(scan.id, 'info', 'finding github installation');
-      const installation = await this.prisma.gitHubInstallation.findFirst({
-        where: { organizationId: detail.organizationId },
-      });
-      if (!installation) {
-        throw new Error('GitHub installation not found for this organization.');
+        await this.log(scan.id, 'info', 'generating installation token');
+        const installationToken =
+          await this.installationTokenService.createToken(installationId);
+        await this.log(
+          scan.id,
+          'info',
+          `cloning repository ${detail.repository.fullName}`,
+        );
+        await cloneGitHubRepository({
+          branch: detail.branch ?? detail.repository.defaultBranch,
+          fullName: detail.repository.fullName,
+          installationToken,
+          jobId: scan.id,
+          tempDir: this.environment.tempDir,
+          timeoutMs: this.environment.scannerTimeoutMs,
+        });
+      } else {
+        if (!detail.repository.repoUrl || detail.repository.isPrivate) {
+          throw new Error(
+            'Manual scan requires a public GitHub repository URL',
+          );
+        }
+        await this.log(
+          scan.id,
+          'info',
+          `cloning public repository ${detail.repository.repoUrl}`,
+        );
+        await clonePublicGitHubRepository({
+          branch: detail.branch ?? detail.repository.defaultBranch,
+          jobId: scan.id,
+          repoUrl: detail.repository.repoUrl,
+          tempDir: this.environment.tempDir,
+          timeoutMs: this.environment.scannerTimeoutMs,
+        });
       }
-      await this.updateCheck(detail, installation.installationId, {
-        status: 'in_progress',
-        summary:
-          'Kodeye is analyzing this commit for potential security findings.',
-      });
-
-      await this.log(scan.id, 'info', 'generating installation token');
-      const installationToken = await this.installationTokenService.createToken(
-        installation.installationId,
-      );
-      await this.log(
-        scan.id,
-        'info',
-        `cloning repository ${detail.repository.fullName}`,
-      );
-      await cloneGitHubRepository({
-        branch: detail.branch ?? detail.repository.defaultBranch,
-        fullName: detail.repository.fullName,
-        installationToken,
-        jobId: scan.id,
-        tempDir: this.environment.tempDir,
-        timeoutMs: this.environment.scannerTimeoutMs,
-      });
       await this.log(scan.id, 'success', 'clone completed');
       const scope = await inspectAuditScope(repositoryPath);
       await this.log(
@@ -149,19 +171,21 @@ export class ScanProcessor {
         where: { id: scan.id },
       });
       await this.log(scan.id, 'success', 'scan completed');
-      await this.updateCheck(detail, installation.installationId, {
-        conclusion:
-          counts.criticalCount > 0 || counts.highCount > 0
-            ? 'failure'
-            : 'success',
-        status: 'completed',
-        summary:
-          counts.criticalCount > 0 || counts.highCount > 0
-            ? 'Kodeye detected high-risk findings. Review the scan report before merging.'
-            : allFindings.length === 0
-              ? 'No findings detected by enabled scanners.'
-              : 'Kodeye completed the scan. Review findings for details.',
-      });
+      if (installationId) {
+        await this.updateCheck(detail, installationId, {
+          conclusion:
+            counts.criticalCount > 0 || counts.highCount > 0
+              ? 'failure'
+              : 'success',
+          status: 'completed',
+          summary:
+            counts.criticalCount > 0 || counts.highCount > 0
+              ? 'Kodeye detected high-risk findings. Review the scan report before merging.'
+              : allFindings.length === 0
+                ? 'No findings detected by enabled scanners.'
+                : 'Kodeye completed the scan. Review findings for details.',
+        });
+      }
     } catch (error) {
       const message = safeErrorMessage(error);
       await this.fail(scan.id, message);

@@ -58,12 +58,20 @@ export class ScansService {
       userId,
       repositoryId,
     );
-    if (repository.provider !== RepositoryProvider.GITHUB) {
+    if (
+      repository.provider === RepositoryProvider.MANUAL &&
+      (!repository.repoUrl ||
+        repository.isPrivate ||
+        !isPublicGitHubRepositoryUrl(repository.repoUrl))
+    ) {
       throw new BadRequestException(
-        'Manual repository scanning is not supported yet. Please connect a GitHub repository.',
+        'Manual scanning requires a public GitHub repository URL. Connect private repositories through the GitHub App.',
       );
     }
-    if (!repository.isConnected || repository.isArchived) {
+    if (
+      repository.provider === RepositoryProvider.GITHUB &&
+      (!repository.isConnected || repository.isArchived)
+    ) {
       throw new BadRequestException(
         'This GitHub repository is disconnected or archived and cannot be scanned.',
       );
@@ -154,5 +162,20 @@ export class ScansService {
       },
     });
     if (!scan) throw new NotFoundException('Scan job not found');
+  }
+}
+
+function isPublicGitHubRepositoryUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === 'https:' &&
+      url.hostname.toLowerCase() === 'github.com' &&
+      !url.username &&
+      !url.password &&
+      /^\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\.git)?\/?$/.test(url.pathname)
+    );
+  } catch {
+    return false;
   }
 }

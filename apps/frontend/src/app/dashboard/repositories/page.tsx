@@ -283,9 +283,26 @@ export default function RepositoriesPage() {
                       : 'Start Scan'}
                   </Button>
                 </>
+              ) : !repository.isPrivate &&
+                isPublicGitHubUrl(repository.repoUrl) ? (
+                <>
+                  <p className="mt-5 rounded-xl bg-slate-50 px-3 py-2 text-center text-xs font-medium text-slate-500">
+                    Public GitHub repository ready for manual audit.
+                  </p>
+                  <Button
+                    className="mt-5 w-full"
+                    disabled={Boolean(scanningId)}
+                    onClick={() => startScan(repository)}
+                  >
+                    {scanningId === repository.id
+                      ? 'Creating scan job...'
+                      : 'Start Scan'}
+                  </Button>
+                </>
               ) : (
                 <p className="mt-5 rounded-xl bg-slate-50 px-3 py-2 text-center text-xs font-medium text-slate-500">
-                  Manual scan is not supported yet.
+                  Manual scans require a public GitHub repository URL. Use the
+                  GitHub App for private repositories.
                 </p>
               )}
             </Card>
@@ -294,7 +311,7 @@ export default function RepositoriesPage() {
       )}
 
       <Modal
-        description="This stores metadata only. Kodeye will not clone or scan the repository yet."
+        description="Public GitHub repositories can be scanned manually after they are added. Use the GitHub App for private repositories."
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Add repository"
@@ -365,4 +382,20 @@ export default function RepositoriesPage() {
       </Modal>
     </div>
   );
+}
+
+function isPublicGitHubUrl(value: string | null): boolean {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === 'https:' &&
+      url.hostname.toLowerCase() === 'github.com' &&
+      !url.username &&
+      !url.password &&
+      /^\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\.git)?\/?$/.test(url.pathname)
+    );
+  } catch {
+    return false;
+  }
 }
