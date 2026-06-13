@@ -45,7 +45,7 @@ RUN pnpm --filter @kodeye/api prisma:generate \
     && pnpm --filter @kodeye/shared build \
     && pnpm --filter @kodeye/worker build \
     && mkdir -p /tmp/kodeye/scans \
-    && chown -R node:node /app /tmp/kodeye
+    && chown -R node:node /tmp/kodeye
 
 USER node
 
