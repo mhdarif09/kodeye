@@ -19,6 +19,11 @@ URLs:
 | Setup URL    | `https://xxxx.ngrok-free.app/api/github/install/callback` | `https://backend.kodeye.net/api/github/install/callback` |
 | Webhook URL  | `https://xxxx.ngrok-free.app/api/github/webhook`          | `https://backend.kodeye.net/api/github/webhook`          |
 
+Aktifkan **Redirect on update** pada bagian Setup URL agar GitHub juga kembali
+ke Kodeye setelah user mengubah pilihan repository pada instalasi yang sudah
+ada. Setelah callback sukses, backend mengarahkan user ke
+`https://app.kodeye.net/dashboard/integrations/github`.
+
 Permissions:
 
 - Metadata: Read-only

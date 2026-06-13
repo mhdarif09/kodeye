@@ -8,6 +8,10 @@ Installation, dan Installation repositories. Masukkan App ID, name, private key
 PEM, webhook secret, install/callback URL, check name/details URL ke Admin
 Settings. Test install, sync, scan, push, dan PR.
 
+Aktifkan **Redirect on update** untuk Setup URL. Setelah instalasi atau perubahan
+repository sukses, callback backend akan mengarahkan user ke
+`https://app.kodeye.net/dashboard/integrations/github`.
+
 Untuk production Docker, simpan private key sebagai file di host dan mount
 read-only ke container API:
 

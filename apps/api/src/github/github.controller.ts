@@ -48,16 +48,20 @@ export class GitHubController {
     @Res() response: Response,
   ): Promise<void> {
     await this.githubService.completeInstallation(query);
+    const appUrl = this.configService.get<string>(
+      'APP_URL',
+      'http://localhost:3000',
+    );
     const frontendUrl = new URL(
       this.configService.get<string>(
         'FRONTEND_GITHUB_INTEGRATION_URL',
-        'http://localhost:3000/dashboard/integrations/github',
+        new URL('/dashboard/integrations/github', appUrl).toString(),
       ),
     );
     frontendUrl.searchParams.set('status', 'connected');
     frontendUrl.searchParams.set('installation_id', query.installation_id);
     frontendUrl.searchParams.set('setup_action', query.setup_action);
-    response.redirect(frontendUrl.toString());
+    response.redirect(303, frontendUrl.toString());
   }
 
   @Get('installations')
