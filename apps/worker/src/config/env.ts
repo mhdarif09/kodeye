@@ -11,7 +11,6 @@ export interface WorkerEnvironment {
   gitleaksBin: string;
   trivyBin: string;
   githubAppId?: string;
-  githubAppPrivateKey?: string;
   githubAppPrivateKeyPath?: string;
   githubCheckName: string;
   githubCheckDetailsBaseUrl: string;
@@ -27,7 +26,6 @@ export function loadWorkerEnvironment(): WorkerEnvironment {
   return {
     gitleaksBin: process.env.SCANNER_GITLEAKS_BIN ?? 'gitleaks',
     githubAppId: process.env.GITHUB_APP_ID,
-    githubAppPrivateKey: process.env.GITHUB_APP_PRIVATE_KEY,
     githubAppPrivateKeyPath: process.env.GITHUB_APP_PRIVATE_KEY_PATH,
     githubCheckDetailsBaseUrl:
       process.env.GITHUB_CHECK_DETAILS_BASE_URL ??

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import jwt from 'jsonwebtoken';
+import { existsSync, readFileSync } from 'node:fs';
 
 import { AppSettingsService } from '../../settings/app-settings.service';
 import { AdminAuditService } from './admin-audit.service';
@@ -23,7 +24,11 @@ export class ProviderTestService {
     else if (provider === 'midtrans') result = this.testMidtrans();
     else if (provider === 'paypal') result = await this.testPaypal();
     else result = await this.testCurrency();
-    await this.audit.createTestLog(actorUserId, provider, result.status !== 'error');
+    await this.audit.createTestLog(
+      actorUserId,
+      provider,
+      result.status !== 'error',
+    );
     return result;
   }
 
@@ -32,7 +37,7 @@ export class ProviderTestService {
       'GITHUB_OAUTH_CLIENT_ID',
       'GITHUB_OAUTH_CLIENT_SECRET',
       'GITHUB_APP_ID',
-      'GITHUB_APP_PRIVATE_KEY',
+      'GITHUB_APP_PRIVATE_KEY_PATH',
       'GITHUB_APP_WEBHOOK_SECRET',
     ]);
     if (missingKeys.length) {
@@ -49,7 +54,7 @@ export class ProviderTestService {
           iat: Math.floor(Date.now() / 1000) - 60,
           iss: this.settings.getString('GITHUB_APP_ID'),
         },
-        normalizePrivateKey(this.settings.getSecret('GITHUB_APP_PRIVATE_KEY')),
+        readPrivateKey(this.settings.getString('GITHUB_APP_PRIVATE_KEY_PATH')),
         { algorithm: 'RS256' },
       );
     } catch {
@@ -61,7 +66,8 @@ export class ProviderTestService {
     }
     return {
       missingKeys: [],
-      message: 'GitHub credentials are configured and the App JWT can be signed.',
+      message:
+        'GitHub credentials are configured and the App JWT can be signed.',
       status: 'success' as const,
     };
   }
@@ -100,7 +106,10 @@ export class ProviderTestService {
         status: 'error' as const,
       };
     }
-    const environment = this.settings.getString('PAYPAL_ENVIRONMENT', 'sandbox');
+    const environment = this.settings.getString(
+      'PAYPAL_ENVIRONMENT',
+      'sandbox',
+    );
     const base =
       environment === 'live'
         ? 'https://api-m.paypal.com'
@@ -166,8 +175,9 @@ export class ProviderTestService {
   }
 }
 
-function normalizePrivateKey(value: string) {
-  if (value.includes('BEGIN')) return value.replace(/\\n/g, '\n');
-  const decoded = Buffer.from(value, 'base64').toString('utf8');
-  return decoded.includes('BEGIN') ? decoded : value;
+function readPrivateKey(path: string) {
+  if (!path || !existsSync(path)) throw new Error('Private key file not found');
+  const key = readFileSync(path, 'utf8');
+  if (!key.includes('BEGIN')) throw new Error('Invalid private key file');
+  return key;
 }

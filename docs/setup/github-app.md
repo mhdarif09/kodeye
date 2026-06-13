@@ -12,12 +12,12 @@ Local dengan tunnel:
 
 URLs:
 
-| Field | Local | Production |
-| --- | --- | --- |
-| Homepage URL | `http://localhost:3000` | `https://app.kodeye.net` |
+| Field        | Local                                                     | Production                                               |
+| ------------ | --------------------------------------------------------- | -------------------------------------------------------- |
+| Homepage URL | `http://localhost:3000`                                   | `https://app.kodeye.net`                                 |
 | Callback URL | `https://xxxx.ngrok-free.app/api/github/install/callback` | `https://backend.kodeye.net/api/github/install/callback` |
-| Setup URL | `https://xxxx.ngrok-free.app/api/github/install/callback` | `https://backend.kodeye.net/api/github/install/callback` |
-| Webhook URL | `https://xxxx.ngrok-free.app/api/github/webhook` | `https://backend.kodeye.net/api/github/webhook` |
+| Setup URL    | `https://xxxx.ngrok-free.app/api/github/install/callback` | `https://backend.kodeye.net/api/github/install/callback` |
+| Webhook URL  | `https://xxxx.ngrok-free.app/api/github/webhook`          | `https://backend.kodeye.net/api/github/webhook`          |
 
 Permissions:
 
@@ -38,13 +38,15 @@ Masukkan ke Admin Settings:
 
 - `GITHUB_APP_ID`
 - `GITHUB_APP_NAME`
-- `GITHUB_APP_PRIVATE_KEY`
 - `GITHUB_APP_WEBHOOK_SECRET`
 - `GITHUB_APP_INSTALL_URL`
 - `GITHUB_APP_CALLBACK_URL`
 - `GITHUB_WEBHOOK_ENABLED`
 - `GITHUB_CHECK_NAME`
 - `GITHUB_CHECK_DETAILS_BASE_URL`
+
+Set `GITHUB_APP_PRIVATE_KEY_PATH` from the deployment environment to a mounted
+read-only PEM file; it is not managed from Admin Settings.
 
 Test:
 

@@ -54,10 +54,6 @@ class EnvironmentVariables {
 
   @IsOptional()
   @IsString()
-  GITHUB_APP_PRIVATE_KEY?: string;
-
-  @IsOptional()
-  @IsString()
   GITHUB_APP_PRIVATE_KEY_PATH?: string;
 
   @IsOptional()

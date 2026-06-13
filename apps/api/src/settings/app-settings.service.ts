@@ -207,7 +207,10 @@ export class AppSettingsService implements OnModuleInit {
     return this.bulkUpdate(values, { actorUserId: userId });
   }
 
-  async bulkUpdate(values: Record<string, string | null>, context: AuditContext) {
+  async bulkUpdate(
+    values: Record<string, string | null>,
+    context: AuditContext,
+  ) {
     this.assertValidPayload(values);
     await this.prisma.$transaction(async (transaction) => {
       for (const [key, value] of Object.entries(values)) {
@@ -384,14 +387,6 @@ export class AppSettingsService implements OnModuleInit {
       if (key.includes('CURRENCY') && !/^[A-Z]{3}(,[A-Z]{3})*$/.test(value)) {
         throw new BadRequestException(`${key} must use ISO currency codes`);
       }
-      if (
-        key === 'GITHUB_APP_PRIVATE_KEY' &&
-        !value.includes('BEGIN') &&
-        !value.includes('\\n') &&
-        !/^[A-Za-z0-9+/=]+$/.test(value)
-      ) {
-        throw new BadRequestException(`${key} must look like PEM or base64`);
-      }
     }
   }
 
@@ -463,7 +458,9 @@ export class AppSettingsService implements OnModuleInit {
     const parsed = parseKey(configured);
     if (parsed) return parsed;
     if (isProduction) {
-      throw new Error('SETTINGS_ENCRYPTION_KEY must be 32 bytes, hex, or base64');
+      throw new Error(
+        'SETTINGS_ENCRYPTION_KEY must be 32 bytes, hex, or base64',
+      );
     }
     this.logger.warn(
       'SETTINGS_ENCRYPTION_KEY is not 32 bytes; deriving a development key with SHA-256.',

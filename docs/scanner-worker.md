@@ -86,9 +86,9 @@ The image includes Node.js 20, pnpm, git, Semgrep, Gitleaks, Trivy,
 certificates, curl, Python, and unzip. It generates Prisma Client during build
 but never runs migrations. Runtime secrets come from environment variables.
 
-For a private key file, mount it into the container and set
-`GITHUB_APP_PRIVATE_KEY_PATH` to the container path. Alternatively use
-`GITHUB_APP_PRIVATE_KEY` with escaped newlines or base64.
+Mount the private key file into the container and set
+`GITHUB_APP_PRIVATE_KEY_PATH` to the container path. Inline private keys are not
+supported.
 
 Example Compose mount:
 

@@ -1,48 +1,48 @@
 # Credential Map
 
-| Setting Key | Category | Secret | Where To Get | Example | Admin Settings Page | Used For | Test Method |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `GITHUB_OAUTH_CLIENT_ID` | GitHub | No | GitHub OAuth App Client ID | `Ov23...` | Admin -> Settings -> GitHub | Login with GitHub | Test GitHub, OAuth login |
-| `GITHUB_OAUTH_CLIENT_SECRET` | GitHub | Yes | GitHub OAuth App Client Secret | `gho_...` | Admin -> Settings -> GitHub | OAuth token exchange | Test GitHub |
-| `GITHUB_OAUTH_CALLBACK_URL` | GitHub | No | Backend callback URL | `http://127.0.0.1:3001/api/auth/github/callback` | Admin -> Settings -> GitHub | OAuth callback | OAuth login |
-| `GITHUB_APP_ID` | GitHub | No | GitHub App settings | `123456` | Admin -> Settings -> GitHub | App JWT | Test GitHub |
-| `GITHUB_APP_NAME` | GitHub | No | GitHub App settings | `Kodeye Local` | Admin -> Settings -> GitHub | Display/reference | Manual check |
-| `GITHUB_APP_PRIVATE_KEY` | GitHub | Yes | GitHub App private key | `-----BEGIN...` | Admin -> Settings -> GitHub | App JWT signing | Test GitHub |
-| `GITHUB_APP_WEBHOOK_SECRET` | GitHub | Yes | Random string set in GitHub App | `long-random` | Admin -> Settings -> GitHub | Webhook signature | Webhook delivery |
-| `GITHUB_APP_INSTALL_URL` | GitHub | No | GitHub App install URL | `https://github.com/apps/...` | Admin -> Settings -> GitHub | App install flow | Install app |
-| `GITHUB_APP_CALLBACK_URL` | GitHub | No | Backend setup callback | `https://xxxx.ngrok-free.app/api/github/install/callback` | Admin -> Settings -> GitHub | Install callback | Install app |
-| `GITHUB_WEBHOOK_ENABLED` | GitHub | No | Kodeye config | `true` | Admin -> Settings -> GitHub | Webhook processing | Push/PR |
-| `GITHUB_CHECK_NAME` | GitHub | No | Kodeye config | `Kodeye Security Scan` | Admin -> Settings -> GitHub | Check Run label | Push/PR |
-| `GITHUB_CHECK_DETAILS_BASE_URL` | GitHub | No | Frontend scan URL | `http://localhost:3000/dashboard/scans` | Admin -> Settings -> GitHub | Check details link | Check Run |
-| `MIDTRANS_IS_PRODUCTION` | Midtrans | No | Midtrans environment | `false` | Admin -> Settings -> Payments | Endpoint selection | Test Midtrans |
-| `MIDTRANS_SERVER_KEY` | Midtrans | Yes | Midtrans Access Keys | `SB-Mid-server-...` | Admin -> Settings -> Payments | Snap/API auth | Test Midtrans |
-| `MIDTRANS_CLIENT_KEY` | Midtrans | No | Midtrans Access Keys | `SB-Mid-client-...` | Admin -> Settings -> Payments | Snap frontend if used | Checkout |
-| `MIDTRANS_MERCHANT_ID` | Midtrans | No | Midtrans account | `G123...` | Admin -> Settings -> Payments | Reference | Manual check |
-| `MIDTRANS_NOTIFICATION_SECRET` | Midtrans | Yes | Random configured secret | `long-random` | Admin -> Settings -> Payments | Webhook hardening | Notification |
-| `PAYPAL_ENVIRONMENT` | PayPal | No | PayPal app environment | `sandbox` | Admin -> Settings -> Payments | API base URL | Test PayPal |
-| `PAYPAL_CLIENT_ID` | PayPal | No | PayPal Developer App | `AY...` | Admin -> Settings -> Payments | OAuth client | Test PayPal |
-| `PAYPAL_CLIENT_SECRET` | PayPal | Yes | PayPal Developer App | `E...` | Admin -> Settings -> Payments | OAuth secret | Test PayPal |
-| `PAYPAL_WEBHOOK_ID` | PayPal | Yes | PayPal webhook config | `WH-...` | Admin -> Settings -> Payments | Webhook verification | Webhook |
-| `PAYPAL_SUPPORTED_CURRENCIES` | PayPal | No | Kodeye config | `USD,EUR,SGD` | Admin -> Settings -> Payments | Checkout validation | Billing checkout |
-| `BILLING_TAX_ENABLED` | Billing | No | Kodeye config | `true` | Admin -> Settings -> Billing | Tax calculation | Pricing/Billing |
-| `BILLING_DEFAULT_TAX_RATE` | Billing | No | Finance config | `0.11` | Admin -> Settings -> Billing | Tax calculation | Billing |
-| `BILLING_TAX_LABEL` | Billing | No | Finance config | `PPN` | Admin -> Settings -> Billing | Invoice label | Invoice |
-| `BILLING_DEFAULT_CURRENCY` | Currency | No | Kodeye config | `IDR` | Admin -> Settings -> Billing | Default pricing | Pricing |
-| `BILLING_SUPPORTED_CURRENCIES` | Currency | No | Kodeye config | `IDR,USD,EUR,SGD` | Admin -> Settings -> Billing | Currency selector | Pricing |
-| `BILLING_USE_LIVE_CURRENCY` | Currency | No | Kodeye config | `true` | Admin -> Settings -> Billing | FX conversion | Test Currency |
-| `BILLING_EXCHANGE_RATE_PROVIDER` | Currency | No | Kodeye config | `frankfurter` | Admin -> Settings -> Billing | FX provider | Test Currency |
-| `SCAN_WORKER_ENABLED` | Scanner | No | Worker config | `true` | Admin -> Settings -> Scanner | Worker control reference | Scan job |
-| `SCAN_WORKER_TEMP_DIR` | Scanner | No | Worker path | `./tmp/scans` | Admin -> Settings -> Scanner | Clone/temp files | Scan job |
-| `SCANNER_EXECUTION_MODE` | Scanner | No | Worker config | `local-cli` | Admin -> Settings -> Scanner | Scanner mode | Scan job |
-| `SCANNER_TIMEOUT_MS` | Scanner | No | Worker config | `300000` | Admin -> Settings -> Scanner | Timeout | Scan job |
-| `REPORT_STORAGE_DIR` | Report | No | Server path | `./tmp/reports` | Admin -> Settings -> Report | Report files | Download report |
-| `REPORT_ENABLE_PDF` | Report | No | Kodeye config | `true` | Admin -> Settings -> Report | Report PDF | Download PDF |
-| `INVOICE_STORAGE_DIR` | Invoice | No | Server path | `./tmp/invoices` | Admin -> Settings -> Invoice | Invoice files | Download invoice |
-| `INVOICE_PDF_ENABLED` | Invoice | No | Kodeye config | `true` | Admin -> Settings -> Invoice | Invoice PDF | Download invoice |
-| `APP_URL` | App | No | Frontend domain | `http://localhost:3000` | Admin -> Settings -> App | Links | Manual check |
-| `FRONTEND_URL` | App | No | Frontend domain | `http://localhost:3000` | Admin -> Settings -> App | Redirects | Manual check |
-| `API_URL` | App | No | Backend domain | `http://127.0.0.1:3001` | Admin -> Settings -> App | Docs/reference | Manual check |
-| `CORS_ORIGIN` | App | No | Frontend origin | `http://localhost:3000` | Admin -> Settings -> App | CORS | Browser request |
-| `PAYMENT_SUCCESS_URL` | App | No | Frontend URL | `/dashboard/billing?status=success` | Admin -> Settings -> App | Payment redirect | Checkout |
-| `PAYMENT_PENDING_URL` | App | No | Frontend URL | `/dashboard/billing?status=pending` | Admin -> Settings -> App | Payment redirect | Checkout |
-| `PAYMENT_ERROR_URL` | App | No | Frontend URL | `/dashboard/billing?status=error` | Admin -> Settings -> App | Payment redirect | Checkout |
+| Setting Key                      | Category | Secret | Where To Get                    | Example                                                   | Admin Settings Page           | Used For                 | Test Method              |
+| -------------------------------- | -------- | ------ | ------------------------------- | --------------------------------------------------------- | ----------------------------- | ------------------------ | ------------------------ |
+| `GITHUB_OAUTH_CLIENT_ID`         | GitHub   | No     | GitHub OAuth App Client ID      | `Ov23...`                                                 | Admin -> Settings -> GitHub   | Login with GitHub        | Test GitHub, OAuth login |
+| `GITHUB_OAUTH_CLIENT_SECRET`     | GitHub   | Yes    | GitHub OAuth App Client Secret  | `gho_...`                                                 | Admin -> Settings -> GitHub   | OAuth token exchange     | Test GitHub              |
+| `GITHUB_OAUTH_CALLBACK_URL`      | GitHub   | No     | Backend callback URL            | `http://127.0.0.1:3001/api/auth/github/callback`          | Admin -> Settings -> GitHub   | OAuth callback           | OAuth login              |
+| `GITHUB_APP_ID`                  | GitHub   | No     | GitHub App settings             | `123456`                                                  | Admin -> Settings -> GitHub   | App JWT                  | Test GitHub              |
+| `GITHUB_APP_NAME`                | GitHub   | No     | GitHub App settings             | `Kodeye Local`                                            | Admin -> Settings -> GitHub   | Display/reference        | Manual check             |
+| `GITHUB_APP_PRIVATE_KEY_PATH`    | GitHub   | No     | Mounted private key file        | `/run/secrets/github-app-private-key.pem`                 | Deployment env                | App JWT signing          | Test GitHub              |
+| `GITHUB_APP_WEBHOOK_SECRET`      | GitHub   | Yes    | Random string set in GitHub App | `long-random`                                             | Admin -> Settings -> GitHub   | Webhook signature        | Webhook delivery         |
+| `GITHUB_APP_INSTALL_URL`         | GitHub   | No     | GitHub App install URL          | `https://github.com/apps/...`                             | Admin -> Settings -> GitHub   | App install flow         | Install app              |
+| `GITHUB_APP_CALLBACK_URL`        | GitHub   | No     | Backend setup callback          | `https://xxxx.ngrok-free.app/api/github/install/callback` | Admin -> Settings -> GitHub   | Install callback         | Install app              |
+| `GITHUB_WEBHOOK_ENABLED`         | GitHub   | No     | Kodeye config                   | `true`                                                    | Admin -> Settings -> GitHub   | Webhook processing       | Push/PR                  |
+| `GITHUB_CHECK_NAME`              | GitHub   | No     | Kodeye config                   | `Kodeye Security Scan`                                    | Admin -> Settings -> GitHub   | Check Run label          | Push/PR                  |
+| `GITHUB_CHECK_DETAILS_BASE_URL`  | GitHub   | No     | Frontend scan URL               | `http://localhost:3000/dashboard/scans`                   | Admin -> Settings -> GitHub   | Check details link       | Check Run                |
+| `MIDTRANS_IS_PRODUCTION`         | Midtrans | No     | Midtrans environment            | `false`                                                   | Admin -> Settings -> Payments | Endpoint selection       | Test Midtrans            |
+| `MIDTRANS_SERVER_KEY`            | Midtrans | Yes    | Midtrans Access Keys            | `SB-Mid-server-...`                                       | Admin -> Settings -> Payments | Snap/API auth            | Test Midtrans            |
+| `MIDTRANS_CLIENT_KEY`            | Midtrans | No     | Midtrans Access Keys            | `SB-Mid-client-...`                                       | Admin -> Settings -> Payments | Snap frontend if used    | Checkout                 |
+| `MIDTRANS_MERCHANT_ID`           | Midtrans | No     | Midtrans account                | `G123...`                                                 | Admin -> Settings -> Payments | Reference                | Manual check             |
+| `MIDTRANS_NOTIFICATION_SECRET`   | Midtrans | Yes    | Random configured secret        | `long-random`                                             | Admin -> Settings -> Payments | Webhook hardening        | Notification             |
+| `PAYPAL_ENVIRONMENT`             | PayPal   | No     | PayPal app environment          | `sandbox`                                                 | Admin -> Settings -> Payments | API base URL             | Test PayPal              |
+| `PAYPAL_CLIENT_ID`               | PayPal   | No     | PayPal Developer App            | `AY...`                                                   | Admin -> Settings -> Payments | OAuth client             | Test PayPal              |
+| `PAYPAL_CLIENT_SECRET`           | PayPal   | Yes    | PayPal Developer App            | `E...`                                                    | Admin -> Settings -> Payments | OAuth secret             | Test PayPal              |
+| `PAYPAL_WEBHOOK_ID`              | PayPal   | Yes    | PayPal webhook config           | `WH-...`                                                  | Admin -> Settings -> Payments | Webhook verification     | Webhook                  |
+| `PAYPAL_SUPPORTED_CURRENCIES`    | PayPal   | No     | Kodeye config                   | `USD,EUR,SGD`                                             | Admin -> Settings -> Payments | Checkout validation      | Billing checkout         |
+| `BILLING_TAX_ENABLED`            | Billing  | No     | Kodeye config                   | `true`                                                    | Admin -> Settings -> Billing  | Tax calculation          | Pricing/Billing          |
+| `BILLING_DEFAULT_TAX_RATE`       | Billing  | No     | Finance config                  | `0.11`                                                    | Admin -> Settings -> Billing  | Tax calculation          | Billing                  |
+| `BILLING_TAX_LABEL`              | Billing  | No     | Finance config                  | `PPN`                                                     | Admin -> Settings -> Billing  | Invoice label            | Invoice                  |
+| `BILLING_DEFAULT_CURRENCY`       | Currency | No     | Kodeye config                   | `IDR`                                                     | Admin -> Settings -> Billing  | Default pricing          | Pricing                  |
+| `BILLING_SUPPORTED_CURRENCIES`   | Currency | No     | Kodeye config                   | `IDR,USD,EUR,SGD`                                         | Admin -> Settings -> Billing  | Currency selector        | Pricing                  |
+| `BILLING_USE_LIVE_CURRENCY`      | Currency | No     | Kodeye config                   | `true`                                                    | Admin -> Settings -> Billing  | FX conversion            | Test Currency            |
+| `BILLING_EXCHANGE_RATE_PROVIDER` | Currency | No     | Kodeye config                   | `frankfurter`                                             | Admin -> Settings -> Billing  | FX provider              | Test Currency            |
+| `SCAN_WORKER_ENABLED`            | Scanner  | No     | Worker config                   | `true`                                                    | Admin -> Settings -> Scanner  | Worker control reference | Scan job                 |
+| `SCAN_WORKER_TEMP_DIR`           | Scanner  | No     | Worker path                     | `./tmp/scans`                                             | Admin -> Settings -> Scanner  | Clone/temp files         | Scan job                 |
+| `SCANNER_EXECUTION_MODE`         | Scanner  | No     | Worker config                   | `local-cli`                                               | Admin -> Settings -> Scanner  | Scanner mode             | Scan job                 |
+| `SCANNER_TIMEOUT_MS`             | Scanner  | No     | Worker config                   | `300000`                                                  | Admin -> Settings -> Scanner  | Timeout                  | Scan job                 |
+| `REPORT_STORAGE_DIR`             | Report   | No     | Server path                     | `./tmp/reports`                                           | Admin -> Settings -> Report   | Report files             | Download report          |
+| `REPORT_ENABLE_PDF`              | Report   | No     | Kodeye config                   | `true`                                                    | Admin -> Settings -> Report   | Report PDF               | Download PDF             |
+| `INVOICE_STORAGE_DIR`            | Invoice  | No     | Server path                     | `./tmp/invoices`                                          | Admin -> Settings -> Invoice  | Invoice files            | Download invoice         |
+| `INVOICE_PDF_ENABLED`            | Invoice  | No     | Kodeye config                   | `true`                                                    | Admin -> Settings -> Invoice  | Invoice PDF              | Download invoice         |
+| `APP_URL`                        | App      | No     | Frontend domain                 | `http://localhost:3000`                                   | Admin -> Settings -> App      | Links                    | Manual check             |
+| `FRONTEND_URL`                   | App      | No     | Frontend domain                 | `http://localhost:3000`                                   | Admin -> Settings -> App      | Redirects                | Manual check             |
+| `API_URL`                        | App      | No     | Backend domain                  | `http://127.0.0.1:3001`                                   | Admin -> Settings -> App      | Docs/reference           | Manual check             |
+| `CORS_ORIGIN`                    | App      | No     | Frontend origin                 | `http://localhost:3000`                                   | Admin -> Settings -> App      | CORS                     | Browser request          |
+| `PAYMENT_SUCCESS_URL`            | App      | No     | Frontend URL                    | `/dashboard/billing?status=success`                       | Admin -> Settings -> App      | Payment redirect         | Checkout                 |
+| `PAYMENT_PENDING_URL`            | App      | No     | Frontend URL                    | `/dashboard/billing?status=pending`                       | Admin -> Settings -> App      | Payment redirect         | Checkout                 |
+| `PAYMENT_ERROR_URL`              | App      | No     | Frontend URL                    | `/dashboard/billing?status=error`                         | Admin -> Settings -> App      | Payment redirect         | Checkout                 |

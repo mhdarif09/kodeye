@@ -24,23 +24,13 @@ export class GitHubAppTokenService {
 
   private getPrivateKey(): string {
     const pathValue = this.environment.githubAppPrivateKeyPath;
-    if (pathValue && existsSync(pathValue)) {
-      const key = readFileSync(pathValue, 'utf8');
-      if (key.includes('BEGIN')) return key;
-    }
-
-    const configured = this.environment.githubAppPrivateKey;
-    if (!configured)
-      throw new Error('GitHub App private key is not configured');
-    if (configured.includes('BEGIN')) return configured.replace(/\\n/g, '\n');
-    if (existsSync(configured)) {
-      const key = readFileSync(configured, 'utf8');
-      if (key.includes('BEGIN')) return key;
-    }
-    const decoded = Buffer.from(configured, 'base64').toString('utf8');
-    if (!decoded.includes('BEGIN')) {
-      throw new Error('GitHub App private key configuration is invalid');
-    }
-    return decoded;
+    if (!pathValue)
+      throw new Error('GITHUB_APP_PRIVATE_KEY_PATH is not configured');
+    if (!existsSync(pathValue))
+      throw new Error('GitHub App private key file does not exist');
+    const key = readFileSync(pathValue, 'utf8');
+    if (!key.includes('BEGIN'))
+      throw new Error('GitHub App private key file is invalid');
+    return key;
   }
 }

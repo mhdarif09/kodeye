@@ -73,11 +73,18 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     exampleValue: 'http://127.0.0.1:3001',
     whereToGet: 'Domain backend Kodeye.',
   }),
-  setting('CORS_ORIGIN', APP, STRING, 'CORS Origin', 'Allowed frontend origin.', {
-    defaultValue: 'http://localhost:3000',
-    exampleValue: 'http://localhost:3000',
-    whereToGet: 'Origin frontend yang boleh memanggil API.',
-  }),
+  setting(
+    'CORS_ORIGIN',
+    APP,
+    STRING,
+    'CORS Origin',
+    'Allowed frontend origin.',
+    {
+      defaultValue: 'http://localhost:3000',
+      exampleValue: 'http://localhost:3000',
+      whereToGet: 'Origin frontend yang boleh memanggil API.',
+    },
+  ),
   setting(
     'PAYMENT_SUCCESS_URL',
     APP,
@@ -155,26 +162,6 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     exampleValue: 'Kodeye Local',
   }),
   setting(
-    'GITHUB_APP_PRIVATE_KEY',
-    GITHUB,
-    SECRET,
-    'GitHub App Private Key',
-    'PEM private key or base64-encoded PEM.',
-    {
-      exampleValue: '-----BEGIN RSA PRIVATE KEY-----...',
-      requiredInProduction: true,
-      whereToGet: 'GitHub App settings -> Private keys -> Generate.',
-    },
-  ),
-  setting(
-    'GITHUB_APP_PRIVATE_KEY_PATH',
-    GITHUB,
-    STRING,
-    'Private Key Path',
-    'Optional filesystem path to private key.',
-    { exampleValue: './kodeye-local.private-key.pem' },
-  ),
-  setting(
     'GITHUB_APP_WEBHOOK_SECRET',
     GITHUB,
     SECRET,
@@ -183,7 +170,8 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     {
       exampleValue: 'long-random-string',
       requiredInProduction: true,
-      whereToGet: 'Create a random string and paste it into GitHub App webhook secret.',
+      whereToGet:
+        'Create a random string and paste it into GitHub App webhook secret.',
     },
   ),
   setting(
@@ -210,10 +198,17 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     'Enable GitHub webhook processing.',
     { defaultValue: 'true', exampleValue: 'true' },
   ),
-  setting('GITHUB_CHECK_NAME', GITHUB, STRING, 'Check Name', 'Check Run name.', {
-    defaultValue: 'Kodeye Security Scan',
-    exampleValue: 'Kodeye Security Scan',
-  }),
+  setting(
+    'GITHUB_CHECK_NAME',
+    GITHUB,
+    STRING,
+    'Check Name',
+    'Check Run name.',
+    {
+      defaultValue: 'Kodeye Security Scan',
+      exampleValue: 'Kodeye Security Scan',
+    },
+  ),
   setting(
     'GITHUB_CHECK_DETAILS_BASE_URL',
     GITHUB,
@@ -247,7 +242,8 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     'Server key used only by backend.',
     {
       exampleValue: 'SB-Mid-server-xxxxxxxx',
-      whereToGet: 'Midtrans Dashboard -> Settings -> Access Keys -> Server Key.',
+      whereToGet:
+        'Midtrans Dashboard -> Settings -> Access Keys -> Server Key.',
     },
   ),
   setting(
@@ -258,7 +254,8 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     'Client key used by optional Snap frontend integrations.',
     {
       exampleValue: 'SB-Mid-client-xxxxxxxx',
-      whereToGet: 'Midtrans Dashboard -> Settings -> Access Keys -> Client Key.',
+      whereToGet:
+        'Midtrans Dashboard -> Settings -> Access Keys -> Client Key.',
     },
   ),
   setting(
@@ -278,14 +275,29 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     { exampleValue: 'long-random-string' },
   ),
 
-  setting('PAYPAL_ENVIRONMENT', PAYPAL, STRING, 'Environment', 'sandbox or live.', {
-    defaultValue: 'sandbox',
-    exampleValue: 'sandbox',
-  }),
-  setting('PAYPAL_CLIENT_ID', PAYPAL, STRING, 'Client ID', 'PayPal REST API client ID.', {
-    exampleValue: 'AYxxxxxxxxxxxx',
-    whereToGet: 'PayPal Developer Dashboard -> Apps & Credentials -> Client ID.',
-  }),
+  setting(
+    'PAYPAL_ENVIRONMENT',
+    PAYPAL,
+    STRING,
+    'Environment',
+    'sandbox or live.',
+    {
+      defaultValue: 'sandbox',
+      exampleValue: 'sandbox',
+    },
+  ),
+  setting(
+    'PAYPAL_CLIENT_ID',
+    PAYPAL,
+    STRING,
+    'Client ID',
+    'PayPal REST API client ID.',
+    {
+      exampleValue: 'AYxxxxxxxxxxxx',
+      whereToGet:
+        'PayPal Developer Dashboard -> Apps & Credentials -> Client ID.',
+    },
+  ),
   setting(
     'PAYPAL_CLIENT_SECRET',
     PAYPAL,
@@ -309,10 +321,17 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     { defaultValue: 'USD,EUR,SGD', exampleValue: 'USD,EUR,SGD' },
   ),
 
-  setting('BILLING_TAX_ENABLED', BILLING, BOOLEAN, 'Tax Enabled', 'Enable tax.', {
-    defaultValue: 'true',
-    exampleValue: 'true',
-  }),
+  setting(
+    'BILLING_TAX_ENABLED',
+    BILLING,
+    BOOLEAN,
+    'Tax Enabled',
+    'Enable tax.',
+    {
+      defaultValue: 'true',
+      exampleValue: 'true',
+    },
+  ),
   setting(
     'BILLING_DEFAULT_TAX_RATE',
     BILLING,
@@ -374,10 +393,17 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     { defaultValue: 'true', exampleValue: 'true' },
   ),
 
-  setting('SCAN_WORKER_ENABLED', SCANNER, BOOLEAN, 'Worker Enabled', 'Enable scanner worker.', {
-    defaultValue: 'true',
-    exampleValue: 'true',
-  }),
+  setting(
+    'SCAN_WORKER_ENABLED',
+    SCANNER,
+    BOOLEAN,
+    'Worker Enabled',
+    'Enable scanner worker.',
+    {
+      defaultValue: 'true',
+      exampleValue: 'true',
+    },
+  ),
   setting(
     'SCAN_WORKER_POLL_INTERVAL_MS',
     SCANNER,
@@ -394,10 +420,17 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     'Worker scan concurrency.',
     { defaultValue: '1', exampleValue: '1' },
   ),
-  setting('SCAN_WORKER_TEMP_DIR', SCANNER, STRING, 'Temp Directory', 'Worker temp directory.', {
-    defaultValue: './tmp/scans',
-    exampleValue: './tmp/scans',
-  }),
+  setting(
+    'SCAN_WORKER_TEMP_DIR',
+    SCANNER,
+    STRING,
+    'Temp Directory',
+    'Worker temp directory.',
+    {
+      defaultValue: './tmp/scans',
+      exampleValue: './tmp/scans',
+    },
+  ),
   setting(
     'SCANNER_EXECUTION_MODE',
     SCANNER,
@@ -406,65 +439,152 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     'Scanner execution mode.',
     { defaultValue: 'local-cli', exampleValue: 'local-cli' },
   ),
-  setting('SCANNER_SEMGREP_BIN', SCANNER, STRING, 'Semgrep Binary', 'Semgrep executable.', {
-    defaultValue: 'semgrep',
-    exampleValue: 'semgrep',
-  }),
-  setting('SCANNER_GITLEAKS_BIN', SCANNER, STRING, 'Gitleaks Binary', 'Gitleaks executable.', {
-    defaultValue: 'gitleaks',
-    exampleValue: 'gitleaks',
-  }),
-  setting('SCANNER_TRIVY_BIN', SCANNER, STRING, 'Trivy Binary', 'Trivy executable.', {
-    defaultValue: 'trivy',
-    exampleValue: 'trivy',
-  }),
-  setting('SCANNER_TIMEOUT_MS', SCANNER, NUMBER, 'Scanner Timeout', 'Scanner timeout in ms.', {
-    defaultValue: '300000',
-    exampleValue: '300000',
-  }),
+  setting(
+    'SCANNER_SEMGREP_BIN',
+    SCANNER,
+    STRING,
+    'Semgrep Binary',
+    'Semgrep executable.',
+    {
+      defaultValue: 'semgrep',
+      exampleValue: 'semgrep',
+    },
+  ),
+  setting(
+    'SCANNER_GITLEAKS_BIN',
+    SCANNER,
+    STRING,
+    'Gitleaks Binary',
+    'Gitleaks executable.',
+    {
+      defaultValue: 'gitleaks',
+      exampleValue: 'gitleaks',
+    },
+  ),
+  setting(
+    'SCANNER_TRIVY_BIN',
+    SCANNER,
+    STRING,
+    'Trivy Binary',
+    'Trivy executable.',
+    {
+      defaultValue: 'trivy',
+      exampleValue: 'trivy',
+    },
+  ),
+  setting(
+    'SCANNER_TIMEOUT_MS',
+    SCANNER,
+    NUMBER,
+    'Scanner Timeout',
+    'Scanner timeout in ms.',
+    {
+      defaultValue: '300000',
+      exampleValue: '300000',
+    },
+  ),
 
-  setting('REPORT_STORAGE_DIR', REPORT, STRING, 'Report Storage Dir', 'Generated reports directory.', {
-    defaultValue: './tmp/reports',
-    exampleValue: './tmp/reports',
-  }),
-  setting('REPORT_ENABLE_PDF', REPORT, BOOLEAN, 'PDF Enabled', 'Enable report PDF generation.', {
-    defaultValue: 'true',
-    exampleValue: 'true',
-  }),
-  setting('INVOICE_STORAGE_DIR', INVOICE, STRING, 'Invoice Storage Dir', 'Generated invoices directory.', {
-    defaultValue: './tmp/invoices',
-    exampleValue: './tmp/invoices',
-  }),
-  setting('INVOICE_PDF_ENABLED', INVOICE, BOOLEAN, 'Invoice PDF Enabled', 'Enable invoice PDF generation.', {
-    defaultValue: 'true',
-    exampleValue: 'true',
-  }),
+  setting(
+    'REPORT_STORAGE_DIR',
+    REPORT,
+    STRING,
+    'Report Storage Dir',
+    'Generated reports directory.',
+    {
+      defaultValue: './tmp/reports',
+      exampleValue: './tmp/reports',
+    },
+  ),
+  setting(
+    'REPORT_ENABLE_PDF',
+    REPORT,
+    BOOLEAN,
+    'PDF Enabled',
+    'Enable report PDF generation.',
+    {
+      defaultValue: 'true',
+      exampleValue: 'true',
+    },
+  ),
+  setting(
+    'INVOICE_STORAGE_DIR',
+    INVOICE,
+    STRING,
+    'Invoice Storage Dir',
+    'Generated invoices directory.',
+    {
+      defaultValue: './tmp/invoices',
+      exampleValue: './tmp/invoices',
+    },
+  ),
+  setting(
+    'INVOICE_PDF_ENABLED',
+    INVOICE,
+    BOOLEAN,
+    'Invoice PDF Enabled',
+    'Enable invoice PDF generation.',
+    {
+      defaultValue: 'true',
+      exampleValue: 'true',
+    },
+  ),
   setting(
     'PUPPETEER_EXECUTABLE_PATH',
     REPORT,
     STRING,
     'Browser Executable Path',
     'Optional Chromium/Chrome executable path.',
-    { exampleValue: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' },
+    {
+      exampleValue:
+        'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    },
   ),
 
-  setting('JWT_EXPIRES_IN', SECURITY, STRING, 'JWT Expires In', 'JWT expiry duration.', {
-    defaultValue: '7d',
-    exampleValue: '7d',
-    restartRequired: true,
-  }),
-  setting('RATE_LIMIT_ENABLED', SECURITY, BOOLEAN, 'Rate Limit Enabled', 'Enable rate limiting.', {
-    defaultValue: 'false',
-    exampleValue: 'false',
-  }),
-  setting('RATE_LIMIT_WINDOW_MS', SECURITY, NUMBER, 'Rate Limit Window', 'Rate-limit window.', {
-    defaultValue: '60000',
-    exampleValue: '60000',
-  }),
-  setting('RATE_LIMIT_MAX', SECURITY, NUMBER, 'Rate Limit Max', 'Max requests per window.', {
-    defaultValue: '120',
-    exampleValue: '120',
-  }),
+  setting(
+    'JWT_EXPIRES_IN',
+    SECURITY,
+    STRING,
+    'JWT Expires In',
+    'JWT expiry duration.',
+    {
+      defaultValue: '7d',
+      exampleValue: '7d',
+      restartRequired: true,
+    },
+  ),
+  setting(
+    'RATE_LIMIT_ENABLED',
+    SECURITY,
+    BOOLEAN,
+    'Rate Limit Enabled',
+    'Enable rate limiting.',
+    {
+      defaultValue: 'false',
+      exampleValue: 'false',
+    },
+  ),
+  setting(
+    'RATE_LIMIT_WINDOW_MS',
+    SECURITY,
+    NUMBER,
+    'Rate Limit Window',
+    'Rate-limit window.',
+    {
+      defaultValue: '60000',
+      exampleValue: '60000',
+    },
+  ),
+  setting(
+    'RATE_LIMIT_MAX',
+    SECURITY,
+    NUMBER,
+    'Rate Limit Max',
+    'Max requests per window.',
+    {
+      defaultValue: '120',
+      exampleValue: '120',
+    },
+  ),
 ];
 
 export const SETTING_KEYS = new Set(

@@ -5,7 +5,6 @@ import type { ScannerExecutionMode, WorkerEnvironment } from './env';
 
 const workerSettingKeys = [
   'GITHUB_APP_ID',
-  'GITHUB_APP_PRIVATE_KEY',
   'GITHUB_APP_PRIVATE_KEY_PATH',
   'GITHUB_CHECK_NAME',
   'GITHUB_CHECK_DETAILS_BASE_URL',
@@ -59,8 +58,6 @@ export async function applyDashboardSettings(
     ...environment,
     gitleaksBin: values.get('SCANNER_GITLEAKS_BIN') ?? environment.gitleaksBin,
     githubAppId: values.get('GITHUB_APP_ID') ?? environment.githubAppId,
-    githubAppPrivateKey:
-      values.get('GITHUB_APP_PRIVATE_KEY') ?? environment.githubAppPrivateKey,
     githubAppPrivateKeyPath:
       values.get('GITHUB_APP_PRIVATE_KEY_PATH') ??
       environment.githubAppPrivateKeyPath,

@@ -38,9 +38,10 @@ GitHub -> Settings -> Developer settings -> GitHub Apps:
 - Permissions: Metadata read, Contents read, Pull requests read, Checks read/write.
 - Events: Push, Pull request, Repository, Installation, Installation repositories.
 
-Isi `GITHUB_APP_ID`, `GITHUB_APP_NAME`, private key PEM, webhook secret, install
-URL, callback URL, check name, dan details base URL. Test GitHub, install App,
-sync repository, start scan, lalu trigger push/PR.
+Isi `GITHUB_APP_ID`, `GITHUB_APP_NAME`, webhook secret, install URL, callback
+URL, check name, dan details base URL. Private key dibaca dari
+`GITHUB_APP_PRIVATE_KEY_PATH` yang di-mount saat deployment. Test GitHub,
+install App, sync repository, start scan, lalu trigger push/PR.
 
 ## 4. Midtrans
 

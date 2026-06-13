@@ -198,7 +198,7 @@ GITHUB_OAUTH_CALLBACK_URL="http://localhost:3001/api/auth/github/callback"
 
 GITHUB_APP_ID=""
 GITHUB_APP_NAME="kodeye-local"
-GITHUB_APP_PRIVATE_KEY=""
+GITHUB_APP_PRIVATE_KEY_PATH="./kodeye-local.private-key.pem"
 GITHUB_APP_WEBHOOK_SECRET=""
 GITHUB_APP_INSTALL_URL="https://github.com/apps/kodeye-local/installations/new"
 GITHUB_APP_CALLBACK_URL="http://localhost:3001/api/github/install/callback"
@@ -207,15 +207,9 @@ FRONTEND_AUTH_CALLBACK_URL="http://localhost:3000/auth/callback"
 FRONTEND_GITHUB_INTEGRATION_URL="http://localhost:3000/dashboard/integrations/github"
 ```
 
-`GITHUB_APP_PRIVATE_KEY` direkomendasikan berisi private key PEM dalam format
-base64. PowerShell:
-
-```powershell
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("kodeye-local.private-key.pem"))
-```
-
-PEM dengan newline escaped `\n` juga didukung. Jangan commit private key,
-OAuth client secret, webhook secret, OAuth token, atau installation token.
+`GITHUB_APP_PRIVATE_KEY_PATH` harus mengarah ke file PEM private key. Jangan
+commit private key, OAuth client secret, webhook secret, OAuth token, atau
+installation token.
 
 ### Create GitHub OAuth App
 
@@ -505,11 +499,10 @@ SCAN_WORKER_ENABLED=true
 SCANNER_EXECUTION_MODE="local-cli"
 SCAN_WORKER_TEMP_DIR="/tmp/kodeye/scans"
 GITHUB_APP_ID=""
-GITHUB_APP_PRIVATE_KEY_PATH=""
-GITHUB_APP_PRIVATE_KEY=""
+GITHUB_APP_PRIVATE_KEY_PATH="/run/secrets/github-app-private-key.pem"
 ```
 
-Use either private key path or inline/base64 private key. Never commit the PEM
+Mount the private key read-only into the worker container. Never commit the PEM
 file. Prisma Client is generated during the image build; migrations are not run
 inside the worker image.
 

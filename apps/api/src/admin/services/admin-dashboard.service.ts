@@ -66,9 +66,8 @@ export class AdminDashboardService {
       }),
     ]);
 
-    const settings = await this.settings.list();
     const configured = (keys: string[]) =>
-      keys.every((key) => settings.find((item) => item.key === key)?.configured);
+      keys.every((key) => Boolean(this.settings.getString(key)));
 
     return {
       activeSubscriptions,
@@ -82,7 +81,7 @@ export class AdminDashboardService {
           'GITHUB_OAUTH_CLIENT_ID',
           'GITHUB_OAUTH_CLIENT_SECRET',
           'GITHUB_APP_ID',
-          'GITHUB_APP_PRIVATE_KEY',
+          'GITHUB_APP_PRIVATE_KEY_PATH',
           'GITHUB_APP_WEBHOOK_SECRET',
         ]),
         midtrans: configured(['MIDTRANS_SERVER_KEY', 'MIDTRANS_CLIENT_KEY']),

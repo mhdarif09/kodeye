@@ -21,7 +21,6 @@ sudo chmod 400 /opt/kodeye/secrets/github-app-private-key.pem
 Isi `.env.production`:
 
 ```env
-GITHUB_APP_PRIVATE_KEY=
 GITHUB_APP_PRIVATE_KEY_HOST_PATH=/opt/kodeye/secrets/github-app-private-key.pem
 GITHUB_APP_PRIVATE_KEY_PATH=/run/secrets/github-app-private-key.pem
 GITHUB_APP_INSTALL_URL=https://github.com/apps/your-github-app-slug/installations/new
@@ -29,10 +28,12 @@ GITHUB_APP_CALLBACK_URL=https://backend.kodeye.net/api/github/install/callback
 ```
 
 `GITHUB_APP_PRIVATE_KEY_HOST_PATH` adalah lokasi file di VPS.
-`GITHUB_APP_PRIVATE_KEY_PATH` adalah lokasi file yang terlihat oleh API di dalam
-container. Setelah mengubahnya, recreate API:
+`GITHUB_APP_PRIVATE_KEY_PATH` adalah lokasi file yang terlihat oleh API dan
+worker di dalam container. Isi PEM langsung tidak didukung. Setelah mengubahnya,
+recreate API dan worker:
 
 ```bash
-docker compose --env-file .env.production -f docker-compose.prod.yml up -d --force-recreate api
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d --force-recreate api worker
 docker compose --env-file .env.production -f docker-compose.prod.yml exec api test -r /run/secrets/github-app-private-key.pem
+docker compose --env-file .env.production -f docker-compose.prod.yml exec worker test -r /run/secrets/github-app-private-key.pem
 ```

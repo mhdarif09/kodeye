@@ -125,28 +125,21 @@ export class GitHubAppService {
   }
 
   private getPrivateKey(): string {
-    const configuredPath = this.configService.get<string>(
+    const configuredPath = this.getRequiredConfig(
       'GITHUB_APP_PRIVATE_KEY_PATH',
     );
-    if (configuredPath && existsSync(configuredPath)) {
-      const fileKey = readFileSync(configuredPath, 'utf8');
-      if (fileKey.includes('BEGIN')) return fileKey;
-    }
-    const configuredKey = this.getRequiredConfig('GITHUB_APP_PRIVATE_KEY');
-    if (configuredKey.includes('BEGIN')) {
-      return configuredKey.replace(/\\n/g, '\n');
-    }
-    if (existsSync(configuredKey)) {
-      const fileKey = readFileSync(configuredKey, 'utf8');
-      if (fileKey.includes('BEGIN')) return fileKey;
-    }
-    const decodedKey = Buffer.from(configuredKey, 'base64').toString('utf8');
-    if (!decodedKey.includes('BEGIN')) {
+    if (!existsSync(configuredPath)) {
       throw new ServiceUnavailableException(
-        'GitHub App private key configuration is invalid',
+        'GitHub App private key file does not exist',
       );
     }
-    return decodedKey;
+    const fileKey = readFileSync(configuredPath, 'utf8');
+    if (!fileKey.includes('BEGIN')) {
+      throw new ServiceUnavailableException(
+        'GitHub App private key file is invalid',
+      );
+    }
+    return fileKey;
   }
 
   private getRequiredConfig(name: string): string {
