@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { OrganizationRole, Prisma, UserRole } from '@prisma/client';
+import { OrganizationRole, Prisma, UserRole, UserStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 import { PrismaService } from '../infrastructure/prisma/prisma.service';
@@ -76,6 +76,9 @@ export class AuthService {
     if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
       throw new UnauthorizedException('Invalid email or password');
     }
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException('Account is not active');
+    }
 
     const { passwordHash: _passwordHash, ...publicUser } = user;
     return this.createAuthResult(publicUser);
@@ -86,6 +89,7 @@ export class AuthService {
     name: string;
     email: string;
     role: UserRole;
+    status?: UserStatus;
   }) {
     const accessToken = await this.jwtService.signAsync({
       email: user.email,

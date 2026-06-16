@@ -6,6 +6,7 @@ import {
   CreditCard,
   KeyRound,
   ListChecks,
+  UsersRound,
   Shield,
   ShieldCheck,
   SquareCode,
@@ -28,6 +29,7 @@ export const dashboardNavigation = [
   { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
   { href: '/dashboard/admin', label: 'Admin', icon: Shield },
   { href: '/dashboard/admin/billing', label: 'Admin Billing', icon: Shield },
+  { href: '/dashboard/admin/users', label: 'Admin Users', icon: UsersRound },
   {
     href: '/dashboard/admin/settings',
     label: 'Admin Settings',

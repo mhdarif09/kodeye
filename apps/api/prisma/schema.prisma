@@ -13,6 +13,12 @@ enum UserRole {
   ADMIN
 }
 
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
 enum OrganizationRole {
   OWNER
   MEMBER
@@ -164,22 +170,25 @@ enum AuditAction {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  name         String   @db.VarChar(255)
-  email        String   @unique @db.VarChar(255)
-  passwordHash String   @map("password_hash") @db.VarChar(255)
-  role         UserRole @default(USER)
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id           String     @id @default(cuid())
+  name         String     @db.VarChar(255)
+  email        String     @unique @db.VarChar(255)
+  passwordHash String     @map("password_hash") @db.VarChar(255)
+  role         UserRole   @default(USER)
+  status       UserStatus @default(ACTIVE)
+  suspendedAt  DateTime?  @map("suspended_at")
+  deletedAt    DateTime?  @map("deleted_at")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
 
   ownedOrganizations     Organization[]          @relation("OrganizationOwner")
   memberships            OrganizationMember[]
   githubAccount          GitHubAccount?
   triggeredScanJobs      ScanJob[]
   enterprisePlanRequests EnterprisePlanRequest[]
-  updatedSystemSettings   SystemSetting[]
-  updatedSettings         AppSetting[]
-  adminAuditLogs          AdminAuditLog[]
+  updatedSystemSettings  SystemSetting[]
+  updatedSettings        AppSetting[]
+  adminAuditLogs         AdminAuditLog[]
 
   @@map("users")
 }

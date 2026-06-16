@@ -17,6 +17,8 @@ automation changes.
 - Groq-powered Ask AI can review findings without storing prompts or responses.
 - Generate Fix can fetch one target file, propose a full-file fix, show preview,
   and create a GitHub pull request only after explicit user approval.
+- Admins can manage users from `/dashboard/admin/users`: search users, change
+  roles, suspend/reactivate accounts, and soft-delete/anonymize users.
 
 ## Privacy posture
 
@@ -95,25 +97,27 @@ docker compose --env-file .env.production -f docker-compose.prod.yml up -d worke
 ## Smoke test
 
 1. Open the frontend and login.
-2. Connect GitHub from Dashboard -> Integrations -> GitHub.
-3. Install or update the GitHub App and select a test repository.
-4. Confirm repository sync creates or exposes scan actions.
-5. Start a scan.
-6. Watch worker logs:
+2. As an admin, open Dashboard -> Admin Users and confirm user listing works.
+3. Suspend/reactivate a disposable user and confirm the audit log records it.
+4. Connect GitHub from Dashboard -> Integrations -> GitHub.
+5. Install or update the GitHub App and select a test repository.
+6. Confirm repository sync creates or exposes scan actions.
+7. Start a scan.
+8. Watch worker logs:
 
 ```bash
 docker compose --env-file .env.production -f docker-compose.prod.yml logs -f worker
 ```
 
-7. Confirm scan logs include:
+9. Confirm scan logs include:
    - `full working-tree audit scope`
    - `top audited folders`
    - `semgrep completed`
    - `gitleaks completed`
    - `trivy completed`
-8. Open the scan detail page and confirm the code audit workspace appears.
-9. Open a finding and run Ask AI.
-10. Keep `AI_GITHUB_WRITE_ENABLED=false` until you are ready to test PR writes.
+10. Open the scan detail page and confirm the code audit workspace appears.
+11. Open a finding and run Ask AI.
+12. Keep `AI_GITHUB_WRITE_ENABLED=false` until you are ready to test PR writes.
 
 ## Approved PR write test
 
@@ -137,6 +141,11 @@ docker compose --env-file .env.production -f docker-compose.prod.yml up -d --for
     default branch.
 
 ## Rollback
+
+User management rollback can be done by hiding the route from the frontend, but
+the database migration is intentionally additive. Suspended or deleted users are
+blocked by API auth checks, so manually return a user to `ACTIVE` only after
+confirming the account should regain access.
 
 Disable AI write automation immediately:
 

@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { OrganizationRole, UserRole } from '@prisma/client';
+import { OrganizationRole, UserRole, UserStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'node:crypto';
 
@@ -132,6 +132,10 @@ export class GitHubOAuthService {
       });
       return createdUser;
     });
+
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException('Account is not active');
+    }
 
     const accessToken = await this.jwtService.signAsync({
       email: user.email,

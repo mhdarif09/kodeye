@@ -82,4 +82,11 @@ Gunakan `REPORT_STORAGE_DIR=/app/storage/reports`, `REPORT_ENABLE_PDF=true`,
 `INVOICE_STORAGE_DIR=/app/storage/invoices`, dan `INVOICE_PDF_ENABLED=true`.
 Download report PDF dan invoice PDF sebagai tes akhir.
 
+## 9. Admin Users
+
+Buka `https://app.kodeye.net/dashboard/admin/users`. Admin dapat mencari user,
+mengubah role, suspend/reactivate akun, dan soft-delete/anonymize akun. Aksi ini
+masuk ke Admin Audit Logs. Jangan suspend, delete, atau demote admin terakhir;
+API juga menolak aksi tersebut sebagai guard produksi.
+
 Terakhir jalankan semua provider test dan alur end-to-end.

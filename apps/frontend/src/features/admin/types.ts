@@ -72,3 +72,23 @@ export interface AdminDashboardSummary {
     repository: { name: string };
   }[];
 }
+
+export type AdminUserRole = 'USER' | 'ADMIN';
+export type AdminUserStatus = 'ACTIVE' | 'SUSPENDED' | 'DELETED';
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: AdminUserRole;
+  status: AdminUserStatus;
+  suspendedAt: string | null;
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count: {
+    memberships: number;
+    ownedOrganizations: number;
+    triggeredScanJobs: number;
+  };
+}
