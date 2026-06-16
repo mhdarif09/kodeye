@@ -35,7 +35,9 @@ GitHub -> Settings -> Developer settings -> GitHub Apps:
 - Homepage: `https://kodeye.net`
 - Setup/callback: `https://backend.kodeye.net/api/github/install/callback`
 - Webhook: `https://backend.kodeye.net/api/github/webhook`
-- Permissions: Metadata read, Contents read, Pull requests read, Checks read/write.
+- Permissions: Metadata read, Contents read/write, Pull requests read/write,
+  Checks read/write. Keep `AI_GITHUB_WRITE_ENABLED=false` until the permission
+  update is accepted and AI fix PR automation is ready.
 - Events: Push, Pull request, Repository, Installation, Installation repositories.
 
 Isi `GITHUB_APP_ID`, `GITHUB_APP_NAME`, webhook secret, install URL, callback
@@ -70,7 +72,8 @@ buka pricing, ganti currency, dan validasi tax dengan finance/legal.
 ## 7. Scanner
 
 Gunakan `SCAN_WORKER_ENABLED=true`, `SCANNER_EXECUTION_MODE=local-cli`,
-`SCAN_WORKER_TEMP_DIR=/tmp/kodeye/scans`, dan timeout sesuai kapasitas. Buat scan
+`SCAN_WORKER_TEMP_DIR=/tmp/kodeye/scans`,
+`SCANNER_SEMGREP_INCLUDE_IGNORED=true`, dan timeout sesuai kapasitas. Buat scan
 job, lihat worker logs, dan konfirmasi scan selesai.
 
 ## 8. Report/Invoice

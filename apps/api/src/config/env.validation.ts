@@ -152,13 +152,24 @@ class EnvironmentVariables {
   @IsOptional() @IsString() SCANNER_EXECUTION_MODE?: string;
   @IsOptional() @IsString() SCANNER_SEMGREP_BIN?: string;
   @IsOptional() @IsString() SCANNER_SEMGREP_CONFIGS?: string;
+  @IsOptional() @IsString() SCANNER_SEMGREP_INCLUDE_IGNORED?: string;
   @IsOptional() @IsString() SCANNER_GITLEAKS_BIN?: string;
   @IsOptional() @IsString() SCANNER_TRIVY_BIN?: string;
   @IsOptional() @IsString() SCANNER_TRIVY_SCANNERS?: string;
+  @IsOptional() @IsString() SCANNER_STORE_CODE_EVIDENCE?: string;
   @IsOptional() @IsString() SCANNER_TIMEOUT_MS?: string;
   @IsOptional() @IsString() RATE_LIMIT_ENABLED?: string;
   @IsOptional() @IsString() RATE_LIMIT_WINDOW_MS?: string;
   @IsOptional() @IsString() RATE_LIMIT_MAX?: string;
+  @IsOptional() @IsString() REQUIRE_HTTPS?: string;
+  @IsOptional() @IsString() AI_ENABLED?: string;
+  @IsOptional() @IsString() GROQ_API_KEY?: string;
+  @IsOptional() @IsString() GROQ_MODEL?: string;
+  @IsOptional() @IsString() AI_MAX_COMPLETION_TOKENS?: string;
+  @IsOptional() @IsString() AI_REQUEST_TIMEOUT_MS?: string;
+  @IsOptional() @IsString() AI_FIX_MAX_COMPLETION_TOKENS?: string;
+  @IsOptional() @IsString() AI_FIX_MAX_FILE_BYTES?: string;
+  @IsOptional() @IsString() AI_GITHUB_WRITE_ENABLED?: string;
 }
 
 export function validateEnvironment(

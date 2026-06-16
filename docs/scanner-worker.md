@@ -20,7 +20,9 @@ SCANNER_EXECUTION_MODE="local-cli"
 SCAN_WORKER_TEMP_DIR="/tmp/kodeye/scans"
 AUTO_SCAN_ON_SYNC_ENABLED=true
 SCANNER_SEMGREP_CONFIGS="p/security-audit,p/owasp-top-ten"
+SCANNER_SEMGREP_INCLUDE_IGNORED=true
 SCANNER_TRIVY_SCANNERS="vuln,misconfig,secret"
+SCANNER_STORE_CODE_EVIDENCE=false
 SCANNER_TIMEOUT_MS=900000
 ```
 
@@ -36,8 +38,8 @@ automatically.
 4. Sign a short-lived GitHub App JWT and request an installation token.
 5. Clone the selected repository branch with depth one.
    The authenticated `origin` remote is removed immediately after clone.
-6. Inventory the full working tree, then run Semgrep, Gitleaks, and Trivy
-   sequentially.
+6. Inventory the full working tree, log the audited folder/file count, then run
+   Semgrep, Gitleaks, and Trivy sequentially from the repository root.
 7. Parse and normalize valid JSON output.
 8. Mask secret evidence and save findings plus severity counts.
 9. Mark the job `SUCCESS` when at least one scanner succeeds, otherwise
@@ -49,7 +51,7 @@ Installation tokens exist only in worker memory. They are not stored or logged.
 ## Scanner commands
 
 ```text
-semgrep scan --config p/security-audit --config p/owasp-top-ten --json --output <output> <repoPath>
+semgrep scan --config p/security-audit --config p/owasp-top-ten --no-git-ignore --json --output <output> <repoPath>
 gitleaks detect --source <repoPath> --report-format json --report-path <output> --no-git
 trivy fs --scanners vuln,misconfig,secret --format json --output <output> <repoPath>
 ```
@@ -61,8 +63,10 @@ timeout, bounded stdout/stderr capture, and runs with `shell: false`.
 ## Normalization
 
 - Semgrep maps code findings to SAST findings. Security Audit and OWASP Top 10
-  rulesets run against the full cloned working tree. `ERROR`, `WARNING`, and
-  `INFO` become `HIGH`, `MEDIUM`, and `INFO`.
+  rulesets run against the full cloned working tree. By default,
+  `SCANNER_SEMGREP_INCLUDE_IGNORED=true` adds `--no-git-ignore` so tracked
+  source folders are not skipped only because of `.gitignore`. `ERROR`,
+  `WARNING`, and `INFO` become `HIGH`, `MEDIUM`, and `INFO`.
 - Gitleaks maps findings to `CRITICAL` secret leaks. `Secret` and `Match` are
   masked before persistence.
 - Trivy maps vulnerabilities to dependency findings, misconfigurations to
@@ -73,8 +77,18 @@ OWASP metadata from Semgrep is preserved. Common CWE identifiers from Semgrep
 and Trivy are also mapped to the corresponding OWASP Top 10 2021 category when
 possible.
 
+Normalized findings are also enriched by the versioned bug-bounty
+classification catalog documented in
+[`security/bug-bounty-scanner-coverage.md`](security/bug-bounty-scanner-coverage.md).
+The catalog can raise a finding's severity when a strong name or CWE signal is
+present, but it never lowers the underlying scanner severity.
+
 Raw JSON stored with findings is a small sanitized subset, not the full scanner
 result.
+
+By default, Semgrep source snippets are not persisted. Set
+`SCANNER_STORE_CODE_EVIDENCE=true` only when the organization explicitly
+accepts source snippet retention.
 
 ## Security constraints
 
@@ -83,6 +97,9 @@ result.
 - Never log private keys, tokens, authenticated URLs, or full secrets.
 - Never persist GitHub installation tokens.
 - Clone only into a validated child of `SCAN_WORKER_TEMP_DIR`.
+- Scan from the repository root and audit every folder in the cloned working
+  tree, excluding only `.git`, Kodeye's internal `.kodeye-results`, and
+  symlinks during inventory.
 - Clean the temporary scan directory after success or failure.
 - Treat scanner JSON as untrusted input and reject oversized JSON files.
 - Partial scanner failure creates warning logs; all scanners failing fails the

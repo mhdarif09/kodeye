@@ -43,7 +43,11 @@ export function useAuth(options: { requireAuth?: boolean } = {}) {
   const completeAuth = (result: AuthResult) => {
     setAccessToken(result.accessToken);
     setUser(result.user);
-    router.push('/dashboard');
+    router.push(
+      result.githubInstallOrganizationId
+        ? `/dashboard/integrations/github?auto_install=true&organization_id=${encodeURIComponent(result.githubInstallOrganizationId)}`
+        : '/dashboard',
+    );
   };
 
   return {

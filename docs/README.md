@@ -14,6 +14,7 @@
 - [DNS](deployment/dns.md), [Nginx](deployment/nginx.md), [SSL](deployment/ssl-certbot.md)
 - [Admin user](deployment/admin-user-setup.md) and [Admin Settings](deployment/admin-settings-setup.md)
 - [Running operations](deployment/running-operations.md)
+- [Mini Antigravity release deployment](deployment/mini-antigravity-release.md)
 - [Backup/restore](deployment/backup-restore.md)
 - [Troubleshooting](deployment/troubleshooting.md)
 - [Security](deployment/security.md)
@@ -25,6 +26,15 @@
 - [Launch runbook](launch/launch-runbook.md)
 - [Rollback](launch/rollback.md)
 - [Maintenance](maintenance.md)
+
+## Security
+
+- [Source Code Processing](security/source-code-processing.md)
+- [Bug-Bounty Scanner Coverage](security/bug-bounty-scanner-coverage.md)
+
+## AI Workspace
+
+- [Kodeye AI Workspace](ai-workspace.md)
 
 ## Assurance
 

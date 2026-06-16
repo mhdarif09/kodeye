@@ -3,22 +3,24 @@
 import { ArrowLeft, ExternalLink, FileText, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { FindingsTable } from '../../../../components/scan/findings-table';
-import { RepositoryScanPreview } from '../../../../components/scan/repository-scan-preview';
-import { ScanActivityVisual } from '../../../../components/scan/scan-activity-visual';
+import { FindingAiModal } from '../../../../components/ai/finding-ai-modal';
+import { CodeAuditWorkspace } from '../../../../components/scan/code-audit-workspace';
 import { ScanLogs } from '../../../../components/scan/scan-logs';
-import { ScanPipeline } from '../../../../components/scan/scan-pipeline';
 import { ScanStatusBadge } from '../../../../components/scan/scan-status-badge';
 import { ScanSummaryCards } from '../../../../components/scan/scan-summary-cards';
 import { ReportActions } from '../../../../components/report/report-actions';
 import { Alert } from '../../../../components/ui/alert';
 import { Card } from '../../../../components/ui/card';
+import { Input } from '../../../../components/ui/input';
+import { Select } from '../../../../components/ui/select';
 import { Spinner } from '../../../../components/ui/spinner';
 import { scansApi } from '../../../../features/scans/api';
 import type {
   Finding,
+  FindingSeverity,
   ScanJob,
   ScanLog,
 } from '../../../../features/scans/types';
@@ -40,6 +42,11 @@ export default function ScanDetailPage() {
   const [logs, setLogs] = useState<ScanLog[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [findingSearch, setFindingSearch] = useState('');
+  const [severityFilter, setSeverityFilter] = useState<FindingSeverity | 'ALL'>(
+    'ALL',
+  );
+  const [aiFinding, setAiFinding] = useState<Finding | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -68,6 +75,23 @@ export default function ScanDetailPage() {
     return () => window.clearInterval(timer);
   }, [load, scan]);
 
+  const filteredFindings = useMemo(() => {
+    const search = findingSearch.trim().toLowerCase();
+    return findings.filter((finding) => {
+      if (severityFilter !== 'ALL' && finding.severity !== severityFilter) {
+        return false;
+      }
+      if (!search) return true;
+      return [
+        finding.title,
+        finding.category,
+        finding.cwe,
+        finding.owasp,
+        finding.description,
+      ].some((value) => value?.toLowerCase().includes(search));
+    });
+  }, [findingSearch, findings, severityFilter]);
+
   if (loading) {
     return (
       <div className="flex items-center gap-3 text-sm text-slate-500">
@@ -80,6 +104,7 @@ export default function ScanDetailPage() {
   }
 
   const active = scan.status === 'PENDING' || scan.status === 'RUNNING';
+
   return (
     <div>
       <Link
@@ -175,12 +200,13 @@ export default function ScanDetailPage() {
       <div className="mt-6">
         <ScanSummaryCards scan={scan} />
       </div>
-      <div className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
-        <ScanActivityVisual status={scan.status} />
-        <ScanPipeline logs={logs} status={scan.status} />
-      </div>
       <div className="mt-6">
-        <RepositoryScanPreview status={scan.status} />
+        <CodeAuditWorkspace
+          findings={findings}
+          logs={logs}
+          onAskAi={setAiFinding}
+          scan={scan}
+        />
       </div>
 
       <section className="mt-10">
@@ -189,9 +215,41 @@ export default function ScanDetailPage() {
           Potential issues detected by enabled scanners. Evidence is masked
           where it may contain a secret.
         </p>
+        {findings.length > 0 ? (
+          <div className="mt-5 grid gap-3 md:grid-cols-[1fr_220px]">
+            <Input
+              id="finding-search"
+              label="Search findings"
+              onChange={(event) => setFindingSearch(event.target.value)}
+              placeholder="Search name, category, CWE, or OWASP"
+              value={findingSearch}
+            />
+            <Select
+              id="finding-severity"
+              label="Severity"
+              onChange={(event) =>
+                setSeverityFilter(event.target.value as FindingSeverity | 'ALL')
+              }
+              value={severityFilter}
+            >
+              <option value="ALL">All severities</option>
+              {['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO', 'UNKNOWN'].map(
+                (severity) => (
+                  <option key={severity} value={severity}>
+                    {severity}
+                  </option>
+                ),
+              )}
+            </Select>
+          </div>
+        ) : null}
         <div className="mt-5">
-          {findings.length > 0 ? (
-            <FindingsTable findings={findings} />
+          {filteredFindings.length > 0 ? (
+            <FindingsTable findings={filteredFindings} onAskAi={setAiFinding} />
+          ) : findings.length > 0 ? (
+            <Card className="text-sm text-slate-500">
+              No findings match the current search and severity filter.
+            </Card>
           ) : scan.status === 'SUCCESS' ? (
             <Alert tone="success">
               <p className="font-semibold">
@@ -208,6 +266,7 @@ export default function ScanDetailPage() {
           )}
         </div>
       </section>
+      <FindingAiModal finding={aiFinding} onClose={() => setAiFinding(null)} />
       <div className="mt-6">
         <ScanLogs logs={logs} />
       </div>

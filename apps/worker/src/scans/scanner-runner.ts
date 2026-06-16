@@ -69,6 +69,7 @@ function scannerDefinition(
       args: [
         'scan',
         ...environment.semgrepConfigs.flatMap((config) => ['--config', config]),
+        ...(environment.semgrepIncludeIgnored ? ['--no-git-ignore'] : []),
         '--json',
         '--output',
         outputPath,

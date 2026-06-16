@@ -1,13 +1,31 @@
 import type { Finding } from '../../features/scans/types';
+import { Button } from '../ui/button';
 import { FindingCard } from './finding-card';
 import { SeverityBadge } from './severity-badge';
 
-export function FindingsTable({ findings }: { findings: Finding[] }) {
+export function FindingsTable({
+  findings,
+  onAskAi,
+}: {
+  findings: Finding[];
+  onAskAi?: (finding: Finding) => void;
+}) {
   return (
     <>
       <div className="grid gap-3 md:hidden">
         {findings.map((finding) => (
-          <FindingCard finding={finding} key={finding.id} />
+          <div className="space-y-2" key={finding.id}>
+            <FindingCard finding={finding} />
+            {onAskAi ? (
+              <Button
+                className="w-full"
+                onClick={() => onAskAi(finding)}
+                variant="secondary"
+              >
+                Ask AI
+              </Button>
+            ) : null}
+          </div>
         ))}
       </div>
       <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white md:block">
@@ -18,6 +36,7 @@ export function FindingsTable({ findings }: { findings: Finding[] }) {
               <th className="px-4 py-3">Finding</th>
               <th className="px-4 py-3">Scanner</th>
               <th className="px-4 py-3">Location</th>
+              {onAskAi ? <th className="px-4 py-3">AI Review</th> : null}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -39,6 +58,16 @@ export function FindingsTable({ findings }: { findings: Finding[] }) {
                   {finding.filePath ?? 'Not provided'}
                   {finding.lineStart ? `:${finding.lineStart}` : ''}
                 </td>
+                {onAskAi ? (
+                  <td className="px-4 py-4">
+                    <Button
+                      onClick={() => onAskAi(finding)}
+                      variant="secondary"
+                    >
+                      Ask AI
+                    </Button>
+                  </td>
+                ) : null}
               </tr>
             ))}
           </tbody>

@@ -15,9 +15,11 @@ const workerSettingKeys = [
   'SCANNER_EXECUTION_MODE',
   'SCANNER_SEMGREP_BIN',
   'SCANNER_SEMGREP_CONFIGS',
+  'SCANNER_SEMGREP_INCLUDE_IGNORED',
   'SCANNER_GITLEAKS_BIN',
   'SCANNER_TRIVY_BIN',
   'SCANNER_TRIVY_SCANNERS',
+  'SCANNER_STORE_CODE_EVIDENCE',
   'SCANNER_TIMEOUT_MS',
 ] as const;
 
@@ -88,10 +90,18 @@ export async function applyDashboardSettings(
       values.get('SCANNER_TIMEOUT_MS'),
       environment.scannerTimeoutMs,
     ),
+    storeCodeEvidence: booleanValue(
+      values.get('SCANNER_STORE_CODE_EVIDENCE'),
+      environment.storeCodeEvidence,
+    ),
     semgrepBin: values.get('SCANNER_SEMGREP_BIN') ?? environment.semgrepBin,
     semgrepConfigs: listValue(
       values.get('SCANNER_SEMGREP_CONFIGS'),
       environment.semgrepConfigs,
+    ),
+    semgrepIncludeIgnored: booleanValue(
+      values.get('SCANNER_SEMGREP_INCLUDE_IGNORED'),
+      environment.semgrepIncludeIgnored,
     ),
     tempDir: values.get('SCAN_WORKER_TEMP_DIR') ?? environment.tempDir,
     trivyBin: values.get('SCANNER_TRIVY_BIN') ?? environment.trivyBin,

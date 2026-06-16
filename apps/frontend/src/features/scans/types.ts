@@ -81,6 +81,7 @@ export interface ScanQuery {
 }
 
 export interface FindingQuery {
+  search?: string;
   severity?: FindingSeverity;
   scanner?: string;
   status?: Finding['status'];

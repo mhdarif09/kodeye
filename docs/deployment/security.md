@@ -12,3 +12,7 @@
 - Hapus atau pindahkan private key lokal dari repository tree dan rotate key yang pernah terekspos.
 - Worker menjalankan scanner statis, bukan arbitrary build/test/code dari repository.
 - Review image/scanner version sebelum update dan batasi resource VPS secara operasional.
+- Set `REQUIRE_HTTPS=true`; semua traffic publik harus memakai TLS dan HTTP harus redirect ke HTTPS.
+- Keep `SCANNER_STORE_CODE_EVIDENCE=false` agar source snippet tidak disimpan di findings/report.
+- Worker scan workspace harus memakai RAM-backed `tmpfs`, bukan persistent Docker volume.
+- GitHub clone wajib memakai HTTPS dengan certificate verification aktif.

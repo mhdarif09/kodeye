@@ -53,5 +53,6 @@ import { BillingModule } from '../billing/billing.module';
     PushEventHandler,
     RepositoryEventHandler,
   ],
+  exports: [GitHubAppService],
 })
 export class GitHubModule {}

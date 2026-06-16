@@ -27,8 +27,10 @@ ada. Setelah callback sukses, backend mengarahkan user ke
 Permissions:
 
 - Metadata: Read-only
-- Contents: Read-only
-- Pull requests: Read-only
+- Contents: Read & write when `AI_GITHUB_WRITE_ENABLED=true`; otherwise
+  Read-only is sufficient
+- Pull requests: Read & write when `AI_GITHUB_WRITE_ENABLED=true`; otherwise
+  Read-only is sufficient
 - Checks: Read & write
 
 Events:

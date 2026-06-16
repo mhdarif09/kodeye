@@ -11,6 +11,7 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  wide?: boolean;
 }
 
 export function Modal({
@@ -19,6 +20,7 @@ export function Modal({
   isOpen,
   onClose,
   title,
+  wide = false,
 }: ModalProps) {
   if (!isOpen) return null;
 
@@ -28,7 +30,11 @@ export function Modal({
       className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-0 backdrop-blur-sm sm:items-center sm:p-6"
       role="dialog"
     >
-      <div className="max-h-[92vh] w-full overflow-y-auto rounded-t-3xl bg-white p-5 shadow-2xl sm:max-w-lg sm:rounded-2xl sm:p-6">
+      <div
+        className={`max-h-[92vh] w-full overflow-y-auto rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-2xl sm:p-6 ${
+          wide ? 'sm:max-w-5xl' : 'sm:max-w-lg'
+        }`}
+      >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold text-slate-950">{title}</h2>

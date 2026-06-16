@@ -473,6 +473,17 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     },
   ),
   setting(
+    'SCANNER_SEMGREP_INCLUDE_IGNORED',
+    SCANNER,
+    BOOLEAN,
+    'Semgrep Include Ignored Files',
+    'Scan the full cloned repository tree with Semgrep instead of skipping files only because they match .gitignore.',
+    {
+      defaultValue: 'true',
+      exampleValue: 'true',
+    },
+  ),
+  setting(
     'SCANNER_GITLEAKS_BIN',
     SCANNER,
     STRING,
@@ -481,6 +492,17 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     {
       defaultValue: 'gitleaks',
       exampleValue: 'gitleaks',
+    },
+  ),
+  setting(
+    'SCANNER_STORE_CODE_EVIDENCE',
+    SCANNER,
+    BOOLEAN,
+    'Store Code Evidence',
+    'Persist masked source snippets with findings. Keep disabled for zero-retention source processing.',
+    {
+      defaultValue: 'false',
+      exampleValue: 'false',
     },
   ),
   setting(

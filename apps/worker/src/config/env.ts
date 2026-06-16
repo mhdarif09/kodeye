@@ -7,8 +7,10 @@ export interface WorkerEnvironment {
   tempDir: string;
   scannerExecutionMode: ScannerExecutionMode;
   scannerTimeoutMs: number;
+  storeCodeEvidence: boolean;
   semgrepBin: string;
   semgrepConfigs: string[];
+  semgrepIncludeIgnored: boolean;
   gitleaksBin: string;
   trivyBin: string;
   trivyScanners: string[];
@@ -46,11 +48,14 @@ export function loadWorkerEnvironment(): WorkerEnvironment {
     scanWorkerEnabled: process.env.SCAN_WORKER_ENABLED === 'true',
     scannerExecutionMode: mode === 'local-cli' ? 'local-cli' : 'disabled',
     scannerTimeoutMs: numberValue('SCANNER_TIMEOUT_MS', 900000),
+    storeCodeEvidence: process.env.SCANNER_STORE_CODE_EVIDENCE === 'true',
     semgrepBin: process.env.SCANNER_SEMGREP_BIN ?? 'semgrep',
     semgrepConfigs: listValue('SCANNER_SEMGREP_CONFIGS', [
       'p/security-audit',
       'p/owasp-top-ten',
     ]),
+    semgrepIncludeIgnored:
+      process.env.SCANNER_SEMGREP_INCLUDE_IGNORED !== 'false',
     tempDir: process.env.SCAN_WORKER_TEMP_DIR ?? './tmp/scans',
     trivyBin: process.env.SCANNER_TRIVY_BIN ?? 'trivy',
     trivyScanners: listValue('SCANNER_TRIVY_SCANNERS', [

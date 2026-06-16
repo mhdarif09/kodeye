@@ -3,6 +3,11 @@ import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class ListFindingsQueryDto {
   @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  search?: string;
+
+  @IsOptional()
   @IsEnum(FindingSeverity)
   severity?: FindingSeverity;
 

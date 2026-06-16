@@ -15,3 +15,8 @@ Before production, replace all seed credentials, set strong environment-only
 `CORS_ORIGIN`, and terminate TLS at a reviewed reverse proxy. The in-memory
 rate limiter is intentionally local-only; use a shared gateway/Redis limiter
 when running multiple API instances.
+
+Keep `REQUIRE_HTTPS=true` and `SCANNER_STORE_CODE_EVIDENCE=false` in
+production. The scanner workspace must remain ephemeral and RAM-backed. See
+[`source-code-processing.md`](source-code-processing.md) for the enforceable
+transport and zero-retention policy.

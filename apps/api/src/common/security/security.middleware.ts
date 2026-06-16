@@ -16,6 +16,9 @@ function isLimitedRoute(path: string): boolean {
   return (
     LIMITED_ROUTES.has(path) ||
     /^\/api\/repositories\/[^/]+\/scans$/.test(path) ||
+    /^\/api\/ai\/findings\/[^/]+\/(review|fix(?:\/pull-request)?)$/.test(
+      path,
+    ) ||
     /^\/api\/scans\/[^/]+\/report\/pdf$/.test(path) ||
     /^\/api\/admin\/providers\/[^/]+\/test$/.test(path)
   );
@@ -24,6 +27,7 @@ function isLimitedRoute(path: string): boolean {
 export function securityMiddleware(
   limit = 30,
   windowMs = 60_000,
+  requireHttps = false,
 ): (request: Request, response: Response, next: NextFunction) => void {
   return (request, response, next) => {
     const requestId =
@@ -37,6 +41,21 @@ export function securityMiddleware(
       'permissions-policy',
       'camera=(), microphone=(), geolocation=()',
     );
+    const forwardedProto = request.header('x-forwarded-proto');
+    const secure = request.secure || forwardedProto === 'https';
+    if (secure) {
+      response.setHeader(
+        'strict-transport-security',
+        'max-age=31536000; includeSubDomains',
+      );
+    }
+    if (requireHttps && !secure && !isLocalHealthCheck(request)) {
+      return response.status(400).json({
+        message: 'HTTPS is required',
+        requestId,
+        success: false,
+      });
+    }
 
     if (!isLimitedRoute(request.path)) return next();
     const now = Date.now();
@@ -61,4 +80,11 @@ export function securityMiddleware(
       });
     next();
   };
+}
+
+function isLocalHealthCheck(request: Request): boolean {
+  return (
+    request.path === '/api/health' &&
+    ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(request.ip ?? '')
+  );
 }

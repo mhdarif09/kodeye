@@ -29,11 +29,13 @@ async function bootstrap(): Promise<void> {
   if (isProduction && (frontendUrls.length === 0 || frontendUrls.includes('*')))
     throw new Error('Production CORS_ORIGIN must contain explicit origins');
 
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
   app.setGlobalPrefix('api');
   app.use(
     securityMiddleware(
       settings.getNumber('RATE_LIMIT_MAX', 30),
       settings.getNumber('RATE_LIMIT_WINDOW_MS', 60_000),
+      isProduction && settings.getBoolean('REQUIRE_HTTPS', true),
     ),
   );
   app.use(cookieParser());

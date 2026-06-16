@@ -91,19 +91,24 @@ services:
       SCAN_WORKER_ENABLED: 'true'
       SCANNER_EXECUTION_MODE: local-cli
       SCAN_WORKER_TEMP_DIR: /tmp/kodeye/scans
+      SCANNER_STORE_CODE_EVIDENCE: 'false'
+      SCANNER_SEMGREP_INCLUDE_IGNORED: 'true'
+      GIT_SSL_NO_VERIFY: '0'
     depends_on:
       mysql:
         condition: service_healthy
     volumes:
-      - worker_tmp:/tmp/kodeye/scans
       - ${GITHUB_APP_PRIVATE_KEY_HOST_PATH:-/opt/kodeye/secrets/github-app-private-key.pem}:/run/secrets/github-app-private-key.pem:ro
+    tmpfs:
+      - /tmp/kodeye/scans:size=2g,mode=0700,uid=1000,gid=1000
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
     networks:
       - kodeye_internal
 
 volumes:
   mysql_data:
-  worker_tmp:
   report_storage:
   invoice_storage:
 

@@ -136,6 +136,17 @@ export class ScansService {
       select: findingSelect,
       where: {
         scanJobId: scanId,
+        ...(query.search
+          ? {
+              OR: [
+                { category: { contains: query.search } },
+                { cwe: { contains: query.search } },
+                { description: { contains: query.search } },
+                { owasp: { contains: query.search } },
+                { title: { contains: query.search } },
+              ],
+            }
+          : {}),
         ...(query.severity ? { severity: query.severity } : {}),
         ...(query.scanner ? { scanner: query.scanner } : {}),
         ...(query.status ? { status: query.status } : {}),

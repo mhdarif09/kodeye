@@ -138,7 +138,30 @@ export class GitHubOAuthService {
       role: user.role,
       sub: user.id,
     });
-    return { accessToken, user };
+    const [githubInstallationCount, ownedOrganization] = await Promise.all([
+      this.prisma.gitHubInstallation.count({
+        where: {
+          organization: {
+            OR: [
+              { ownerUserId: user.id },
+              { members: { some: { userId: user.id } } },
+            ],
+          },
+        },
+      }),
+      this.prisma.organization.findFirst({
+        orderBy: { createdAt: 'desc' },
+        select: { id: true },
+        where: { ownerUserId: user.id },
+      }),
+    ]);
+
+    return {
+      accessToken,
+      githubInstallOrganizationId:
+        githubInstallationCount === 0 ? ownedOrganization?.id : undefined,
+      user,
+    };
   }
 
   private githubAccountData(githubUser: GitHubUser, email: string) {

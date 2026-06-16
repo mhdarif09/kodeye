@@ -9,6 +9,7 @@ export interface User {
 
 export interface AuthResult {
   accessToken: string;
+  githubInstallOrganizationId?: string;
   user: User;
 }
 

@@ -9,8 +9,8 @@ stores installation tokens.
 Repository permissions:
 
 - Metadata: Read-only
-- Contents: Read-only
-- Pull requests: Read-only
+- Contents: Read & write for approved AI fix branches
+- Pull requests: Read & write for approved AI fix pull requests
 - Checks: Read & write
 
 Subscribe to these events:

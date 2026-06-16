@@ -32,7 +32,7 @@ export default function GitHubIntegrationPage() {
   const [isInstalling, setIsInstalling] = useState(false);
   const [syncingId, setSyncingId] = useState('');
 
-  const loadData = useCallback(async (): Promise<GitHubInstallation[]> => {
+  const loadData = useCallback(async () => {
     try {
       const [installationItems, repositoryItems, organizationItems] =
         await Promise.all([
@@ -44,10 +44,10 @@ export default function GitHubIntegrationPage() {
       setRepositories(repositoryItems);
       setOrganizations(organizationItems);
       setOrganizationId((current) => current || organizationItems[0]?.id || '');
-      return installationItems;
+      return { installationItems, organizationItems };
     } catch (caughtError) {
       setError(getErrorMessage(caughtError));
-      return [];
+      return { installationItems: [], organizationItems: [] };
     } finally {
       setIsLoading(false);
     }
@@ -58,12 +58,34 @@ export default function GitHubIntegrationPage() {
     callbackHandled.current = true;
 
     void (async () => {
-      const installationItems = await loadData();
+      const { installationItems, organizationItems } = await loadData();
       const parameters = new URLSearchParams(window.location.search);
       const status = parameters.get('status');
       const installationId = parameters.get('installation_id');
 
-      if (status !== 'connected' || !installationId) return;
+      if (status !== 'connected' || !installationId) {
+        const autoInstallOrganizationId = parameters.get('organization_id');
+        const autoInstallOrganization = organizationItems.find(
+          (organization) => organization.id === autoInstallOrganizationId,
+        );
+        if (
+          parameters.get('auto_install') === 'true' &&
+          installationItems.length === 0 &&
+          autoInstallOrganization
+        ) {
+          setIsInstalling(true);
+          try {
+            const result = await githubApi.getInstallUrl(
+              autoInstallOrganization.id,
+            );
+            window.location.assign(result.installUrl);
+          } catch (caughtError) {
+            setError(getErrorMessage(caughtError));
+            setIsInstalling(false);
+          }
+        }
+        return;
+      }
 
       const installation = installationItems.find(
         (item) => item.installationId === installationId,

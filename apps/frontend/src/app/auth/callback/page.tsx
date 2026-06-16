@@ -22,7 +22,12 @@ function AuthCallbackContent() {
     // TODO: Replace URL token delivery with one-time exchange or HttpOnly cookie.
     setAccessToken(token);
     window.history.replaceState({}, '', '/auth/callback');
-    router.replace('/dashboard');
+    const installOrganizationId = searchParams.get('organization_id');
+    router.replace(
+      searchParams.get('install_github_app') === 'true' && installOrganizationId
+        ? `/dashboard/integrations/github?auto_install=true&organization_id=${encodeURIComponent(installOrganizationId)}`
+        : '/dashboard',
+    );
   }, [router, searchParams]);
 
   return (

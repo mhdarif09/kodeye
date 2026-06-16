@@ -230,8 +230,9 @@ Buat GitHub App, misalnya `Kodeye Local`:
 - Homepage URL: `http://localhost:3000`
 - Setup URL / Callback URL:
   `http://localhost:3001/api/github/install/callback`
-- Repository permissions: Metadata read-only, Contents read-only
-- Pull requests read-only boleh disiapkan tetapi belum digunakan
+- Repository permissions: Metadata read-only; Contents read/write hanya jika
+  approved AI fix automation akan digunakan
+- Pull requests read/write hanya jika approved AI fix automation akan digunakan
 - Account permissions tidak diperlukan untuk identity user
 - Installation target: any account atau account sendiri untuk local testing
 - Aktifkan pilihan repository saat instalasi
@@ -600,8 +601,10 @@ AUTO_SCAN_PULL_REQUEST_ENABLED=true
 GITHUB_CHECK_DETAILS_BASE_URL="http://localhost:3000/dashboard/scans"
 ```
 
-The GitHub App needs Metadata read-only, Contents read-only, Pull requests
-read-only, and Checks read/write. Subscribe it to Push, Pull request,
+The GitHub App needs Metadata read-only and Checks read/write. Approved AI fix
+automation additionally needs Contents read/write and Pull requests read/write.
+Kodeye keeps repository writes disabled by default through
+`AI_GITHUB_WRITE_ENABLED=false`. Subscribe the App to Push, Pull request,
 Repository, Installation, and Installation repositories events.
 
 For local webhook testing:
@@ -731,6 +734,7 @@ Then follow [DNS](docs/deployment/dns.md), [Nginx](docs/deployment/nginx.md),
 [SSL](docs/deployment/ssl-certbot.md), [admin user](docs/deployment/admin-user-setup.md),
 [admin settings](docs/deployment/admin-settings-setup.md),
 [operations](docs/deployment/running-operations.md),
+[Mini Antigravity release deployment](docs/deployment/mini-antigravity-release.md),
 [backup/restore](docs/deployment/backup-restore.md),
 [troubleshooting](docs/deployment/troubleshooting.md),
 [security](docs/deployment/security.md),

@@ -13,6 +13,7 @@
 | Secret disclosure                | Encrypted settings, masked responses, redacted logs, generic 500 responses                |
 | Forged webhook/payment callback  | Raw-body/signature verification, provider/order/amount/currency validation, deduplication |
 | Command/path injection in worker | `spawn` without shell, branch/repository validation, bounded temp paths, cleanup          |
+| Source interception or retention | HTTPS-only production, verified GitHub TLS, RAM-backed workspace, source evidence off     |
 | XSS/report injection             | Escaped dynamic report and invoice HTML                                                   |
 | Brute force/resource abuse       | DTO validation, sensitive-route rate limits, scan limits and command timeouts             |
 

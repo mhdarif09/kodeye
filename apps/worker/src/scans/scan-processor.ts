@@ -14,6 +14,7 @@ import {
   normalizeScannerOutput,
   type NormalizedFinding,
 } from './finding-normalizer';
+import { BUG_BOUNTY_CATALOG_VERSION } from './bug-bounty-classifier';
 import { inspectAuditScope } from './audit-scope';
 import {
   cloneGitHubRepository,
@@ -118,6 +119,16 @@ export class ScanProcessor {
         scope.truncated ? 'warn' : 'info',
         `full working-tree audit scope: ${scope.files} files across ${scope.directories} directories; top extensions: ${scope.topExtensions.join(', ') || 'none'}${scope.truncated ? ' (inventory truncated)' : ''}`,
       );
+      await this.log(
+        scan.id,
+        'info',
+        `top audited folders: ${scope.topDirectories.join(', ') || 'repository root only'}`,
+      );
+      await this.log(
+        scan.id,
+        'info',
+        `bug-bounty classification catalog: ${BUG_BOUNTY_CATALOG_VERSION}`,
+      );
 
       const allFindings: NormalizedFinding[] = [];
       let successfulScanners = 0;
@@ -137,7 +148,11 @@ export class ScanProcessor {
           continue;
         }
         successfulScanners += 1;
-        const findings = normalizeScannerOutput(scanner, result.output);
+        const findings = normalizeScannerOutput(
+          scanner,
+          result.output,
+          this.environment.storeCodeEvidence,
+        );
         allFindings.push(...findings);
         await this.log(
           scan.id,

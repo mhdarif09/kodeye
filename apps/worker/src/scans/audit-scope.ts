@@ -7,6 +7,7 @@ const MAX_ENTRIES = 250_000;
 export interface AuditScope {
   directories: number;
   files: number;
+  topDirectories: string[];
   topExtensions: string[];
   truncated: boolean;
 }
@@ -15,6 +16,7 @@ export async function inspectAuditScope(
   repositoryPath: string,
 ): Promise<AuditScope> {
   const pending = [repositoryPath];
+  const topDirectories = new Map<string, number>();
   const extensions = new Map<string, number>();
   let directories = 0;
   let files = 0;
@@ -34,7 +36,16 @@ export async function inspectAuditScope(
       if (entry.isSymbolicLink()) continue;
       if (entry.isDirectory()) {
         if (!SKIPPED_DIRECTORIES.has(entry.name)) {
-          pending.push(path.join(directory, entry.name));
+          const childDirectory = path.join(directory, entry.name);
+          pending.push(childDirectory);
+          const relative = path.relative(repositoryPath, childDirectory);
+          const topDirectory = relative.split(path.sep)[0];
+          if (topDirectory) {
+            topDirectories.set(
+              topDirectory,
+              (topDirectories.get(topDirectory) ?? 0) + 1,
+            );
+          }
         }
         continue;
       }
@@ -49,6 +60,10 @@ export async function inspectAuditScope(
   return {
     directories,
     files,
+    topDirectories: [...topDirectories.entries()]
+      .sort((left, right) => right[1] - left[1])
+      .slice(0, 12)
+      .map(([directory, count]) => `${directory}:${count}`),
     topExtensions: [...extensions.entries()]
       .sort((left, right) => right[1] - left[1])
       .slice(0, 8)

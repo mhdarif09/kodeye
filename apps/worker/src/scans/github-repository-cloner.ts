@@ -24,6 +24,10 @@ export async function cloneGitHubRepository(input: {
   const result = await processCommand(
     'git',
     [
+      '-c',
+      'http.sslVerify=true',
+      '-c',
+      'protocol.version=2',
       'clone',
       '--depth',
       '1',
@@ -75,6 +79,10 @@ export async function clonePublicGitHubRepository(input: {
   const result = await processCommand(
     'git',
     [
+      '-c',
+      'http.sslVerify=true',
+      '-c',
+      'protocol.version=2',
       'clone',
       '--depth',
       '1',

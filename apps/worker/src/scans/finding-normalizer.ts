@@ -6,6 +6,7 @@ import {
 } from '@prisma/client';
 
 import { arrayValue, recordValue } from '../common/safe-json';
+import { classifyBugBountyFinding } from './bug-bounty-classifier';
 import { maskSecret, safeCodeEvidence } from './secret-masker';
 import type { ScannerName } from './scanner-runner';
 
@@ -33,11 +34,12 @@ export interface NormalizedFinding {
 export function normalizeScannerOutput(
   scanner: ScannerName,
   output: unknown,
+  storeCodeEvidence = false,
 ): NormalizedFinding[] {
   let findings: NormalizedFinding[];
   if (scanner === 'semgrep') {
     findings = arrayValue(recordValue(output).results).map((item) =>
-      normalizeSemgrepFinding(recordValue(item)),
+      normalizeSemgrepFinding(recordValue(item), storeCodeEvidence),
     );
   } else if (scanner === 'gitleaks') {
     findings = arrayValue(output).map((item) =>
@@ -46,7 +48,7 @@ export function normalizeScannerOutput(
   } else {
     findings = normalizeTrivyOutput(output);
   }
-  return findings.map(clampFinding);
+  return findings.map(classifyBugBountyFinding).map(clampFinding);
 }
 
 function normalizeGitleaksFinding(
@@ -82,6 +84,7 @@ function normalizeGitleaksFinding(
 
 function normalizeSemgrepFinding(
   raw: Record<string, unknown>,
+  storeCodeEvidence: boolean,
 ): NormalizedFinding {
   const extra = recordValue(raw.extra);
   const metadata = recordValue(extra.metadata);
@@ -93,7 +96,9 @@ function normalizeSemgrepFinding(
     confidence: FindingConfidence.UNKNOWN,
     cwe,
     description: message,
-    evidenceMasked: safeCodeEvidence(text(extra.lines)),
+    evidenceMasked: storeCodeEvidence
+      ? safeCodeEvidence(text(extra.lines))
+      : undefined,
     filePath: text(raw.path),
     lineEnd: numberValue(recordValue(raw.end).line),
     lineStart: numberValue(recordValue(raw.start).line),
