@@ -29,7 +29,9 @@ export function useAuth(options: { requireAuth?: boolean } = {}) {
       setUser(currentUser);
       return currentUser;
     } catch {
+      clearAccessToken();
       setUser(null);
+      if (options.requireAuth) router.replace('/login');
       return null;
     } finally {
       setIsLoading(false);

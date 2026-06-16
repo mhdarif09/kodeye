@@ -2,22 +2,29 @@
 
 import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { type FormEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { type FormEvent, useEffect, useState } from 'react';
 
 import { AuthShell } from '../../components/layout/auth-shell';
 import { GitHubAuthButton } from '../../components/github-auth-button';
 import { Alert } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
+import { Spinner } from '../../components/ui/spinner';
 import { useAuth } from '../../features/auth/use-auth';
 import { getErrorMessage } from '../../lib/utils';
 
 export default function RegisterPage() {
-  const { register } = useAuth();
+  const router = useRouter();
+  const { isLoading, register, user } = useAuth();
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading && user) router.replace('/dashboard');
+  }, [isLoading, router, user]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -30,6 +37,17 @@ export default function RegisterPage() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (isLoading || user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50">
+        <div className="flex items-center gap-3 text-sm font-medium text-slate-600">
+          <Spinner />
+          Restoring your session...
+        </div>
+      </main>
+    );
   }
 
   return (
