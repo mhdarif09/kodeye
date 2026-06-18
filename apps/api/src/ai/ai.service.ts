@@ -244,7 +244,7 @@ The user explicitly requested a one-time fix proposal and allowed the complete t
     }
     if (!finding.filePath || isBlockedPath(finding.filePath)) {
       throw new BadRequestException(
-        'This finding does not target an AI-writable source file',
+        'This finding cannot be fixed automatically because it has no safe writable source file target. Use AI review for remediation guidance, or apply the fix manually.',
       );
     }
     const installation = await this.prisma.gitHubInstallation.findFirst({

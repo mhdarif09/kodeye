@@ -266,7 +266,11 @@ export default function ScanDetailPage() {
           )}
         </div>
       </section>
-      <FindingAiModal finding={aiFinding} onClose={() => setAiFinding(null)} />
+      <FindingAiModal
+        finding={aiFinding}
+        onClose={() => setAiFinding(null)}
+        scan={scan}
+      />
       <div className="mt-6">
         <ScanLogs logs={logs} />
       </div>

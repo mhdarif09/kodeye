@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 import { aiApi } from '../../features/ai/api';
 import type { AiFindingReview } from '../../features/ai/types';
 import type { AiFixProposal, AiFixPullRequest } from '../../features/ai/types';
-import type { Finding } from '../../features/scans/types';
+import type { Finding, ScanJob } from '../../features/scans/types';
 import { getErrorMessage } from '../../lib/utils';
 import { Alert } from '../ui/alert';
 import { Badge } from '../ui/badge';
@@ -24,9 +24,11 @@ import { Textarea } from '../ui/textarea';
 export function FindingAiModal({
   finding,
   onClose,
+  scan,
 }: {
   finding: Finding | null;
   onClose: () => void;
+  scan?: ScanJob | null;
 }) {
   const [question, setQuestion] = useState('');
   const [review, setReview] = useState<AiFindingReview | null>(null);
@@ -61,7 +63,7 @@ export function FindingAiModal({
   }
 
   async function generateFix() {
-    if (!finding || fixLoading) return;
+    if (!finding || fixLoading || !fixEligibility(finding, scan).ok) return;
     setFixLoading(true);
     setError('');
     setPullRequest(null);
@@ -102,10 +104,14 @@ export function FindingAiModal({
     >
       {finding ? (
         <div className="space-y-4">
+          {(() => {
+            const eligibility = fixEligibility(finding, scan);
+            return (
+              <>
           <Alert>
-            Ask AI sends sanitized finding metadata only. Generate Fix sends the
-            single target file to Groq after you explicitly request it. Kodeye
-            does not persist prompts, responses, or fix proposals.
+            Ask AI sends sanitized finding metadata only. Single-file AI fix and
+            pull request are available only for connected GitHub findings that
+            target a safe source file.
           </Alert>
           <div className="rounded-xl border border-slate-200 p-4">
             <div className="flex items-center gap-2">
@@ -131,26 +137,33 @@ export function FindingAiModal({
           {error ? <Alert tone="error">{error}</Alert> : null}
           {review ? <ReviewResult review={review} /> : null}
 
-          <div className="space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
-            <p className="font-semibold text-amber-950">
-              Generate a single-file fix proposal
-            </p>
-            <p className="text-sm leading-6 text-amber-800">
-              This sends the complete target file to Groq temporarily. Nothing
-              is committed until you inspect the proposal and approve creating a
-              pull request.
-            </p>
-            <Button
-              disabled={fixLoading}
-              onClick={() => void generateFix()}
-              variant="secondary"
-            >
-              <WandSparkles className="h-4 w-4" />
-              {fixLoading && !fixProposal
-                ? 'Generating fix...'
-                : 'Generate Fix'}
-            </Button>
-          </div>
+          {eligibility.ok ? (
+            <div className="space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <p className="font-semibold text-amber-950">
+                Generate a single-file fix proposal
+              </p>
+              <p className="text-sm leading-6 text-amber-800">
+                This sends the complete target file to Groq temporarily.
+                Nothing is committed until you inspect the proposal and approve
+                creating a pull request.
+              </p>
+              <Button
+                disabled={fixLoading}
+                onClick={() => void generateFix()}
+                variant="secondary"
+              >
+                <WandSparkles className="h-4 w-4" />
+                {fixLoading && !fixProposal
+                  ? 'Generating fix...'
+                  : 'Generate Fix'}
+              </Button>
+            </div>
+          ) : (
+            <Alert>
+              <p className="font-semibold">AI pull request is unavailable.</p>
+              <p className="mt-1">{eligibility.reason}</p>
+            </Alert>
+          )}
 
           {fixProposal ? (
             <div className="space-y-4">
@@ -237,9 +250,52 @@ export function FindingAiModal({
               <Send className="h-4 w-4" /> Ask AI
             </Button>
           </div>
+              </>
+            );
+          })()}
         </div>
       ) : null}
     </Modal>
+  );
+}
+
+function fixEligibility(
+  finding: Finding,
+  scan?: ScanJob | null,
+): { ok: true } | { ok: false; reason: string } {
+  if (scan?.repository.provider !== 'GITHUB') {
+    return {
+      ok: false,
+      reason:
+        'Automatic fix pull requests require a connected GitHub App repository. Manual public repository scans can still use Ask AI for explanation and remediation guidance.',
+    };
+  }
+  if (!finding.filePath) {
+    return {
+      ok: false,
+      reason:
+        'This finding is not tied to a specific file path, so Kodeye cannot safely create a single-file pull request.',
+    };
+  }
+  if (isBlockedPath(finding.filePath)) {
+    return {
+      ok: false,
+      reason:
+        'This finding targets a sensitive or non-writable path such as secrets, private keys, environment files, or GitHub workflow files. Ask AI can explain the fix, but Kodeye will not write this file automatically.',
+    };
+  }
+  return { ok: true };
+}
+
+function isBlockedPath(filePath: string): boolean {
+  const normalized = filePath.replaceAll('\\', '/').toLowerCase();
+  return (
+    normalized.startsWith('/') ||
+    normalized.includes('../') ||
+    normalized.startsWith('.github/workflows/') ||
+    /(^|\/)(\.env(?:\.|$)|.*(?:secret|credential|private.?key).*)/i.test(
+      normalized,
+    )
   );
 }
 
