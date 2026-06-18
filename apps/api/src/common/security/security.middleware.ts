@@ -16,6 +16,7 @@ function isLimitedRoute(path: string): boolean {
   return (
     LIMITED_ROUTES.has(path) ||
     /^\/api\/repositories\/[^/]+\/scans$/.test(path) ||
+    /^\/api\/ai\/findings\/[^/]+\/source$/.test(path) ||
     /^\/api\/ai\/findings\/[^/]+\/(review|fix(?:\/pull-request)?)$/.test(
       path,
     ) ||

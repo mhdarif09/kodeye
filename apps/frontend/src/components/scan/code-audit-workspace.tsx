@@ -13,26 +13,18 @@ import {
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import { aiApi } from '../../features/ai/api';
+import type { AiSourceFile } from '../../features/ai/types';
 import type { Finding, ScanJob, ScanLog } from '../../features/scans/types';
-import { cn } from '../../lib/utils';
+import { cn, getErrorMessage } from '../../lib/utils';
 import { Card } from '../ui/card';
 import { SeverityBadge } from './severity-badge';
 
 interface AuditFile {
   findings: Finding[];
+  isFolder?: boolean;
   path: string;
 }
-
-const fallbackFiles = [
-  'src/',
-  'app/',
-  'config/',
-  'package.json',
-  'Dockerfile',
-  'docker-compose.yml',
-  '.github/workflows/',
-  '.env.example',
-];
 
 const scannerSteps = [
   {
@@ -71,14 +63,31 @@ export function CodeAuditWorkspace({
   onAskAi: (finding: Finding) => void;
 }) {
   const files = useMemo(() => groupFindingsByFile(findings), [findings]);
-  const displayFiles = files.length
-    ? files
-    : fallbackFiles.map((path) => ({ findings: [], path }));
+  const displayFiles = files.length ? files : foldersFromScanLogs(logs, scan);
   const [selectedPath, setSelectedPath] = useState(displayFiles[0]?.path ?? '');
+  const [sourceFiles, setSourceFiles] = useState<Record<string, AiSourceFile>>(
+    {},
+  );
+  const [sourceLoadingId, setSourceLoadingId] = useState('');
+  const [sourceError, setSourceError] = useState('');
   const selected =
     displayFiles.find((file) => file.path === selectedPath) ?? displayFiles[0];
   const selectedFinding = selected?.findings[0];
   const progress = scannerProgress(logs, scan.status);
+
+  async function openSource(finding: Finding) {
+    setSourceError('');
+    if (sourceFiles[finding.id]) return;
+    setSourceLoadingId(finding.id);
+    try {
+      const source = await aiApi.sourceFile(finding.id);
+      setSourceFiles((current) => ({ ...current, [finding.id]: source }));
+    } catch (caught) {
+      setSourceError(getErrorMessage(caught));
+    } finally {
+      setSourceLoadingId('');
+    }
+  }
 
   return (
     <Card className="overflow-hidden bg-slate-950 p-0 text-slate-100">
@@ -154,9 +163,16 @@ export function CodeAuditWorkspace({
           </div>
           <div className="max-h-[520px] overflow-auto p-5">
             {selectedFinding ? (
-              <FindingEditorView finding={selectedFinding} onAskAi={onAskAi} />
+              <FindingEditorView
+                finding={selectedFinding}
+                onAskAi={onAskAi}
+                onOpenSource={openSource}
+                source={sourceFiles[selectedFinding.id]}
+                sourceError={sourceError}
+                sourceLoading={sourceLoadingId === selectedFinding.id}
+              />
             ) : (
-              <EmptyEditorView scan={scan} />
+              <EmptyEditorView file={selected} scan={scan} />
             )}
           </div>
         </main>
@@ -229,11 +245,19 @@ export function CodeAuditWorkspace({
 function FindingEditorView({
   finding,
   onAskAi,
+  onOpenSource,
+  source,
+  sourceError,
+  sourceLoading,
 }: {
   finding: Finding;
   onAskAi: (finding: Finding) => void;
+  onOpenSource: (finding: Finding) => void;
+  source?: AiSourceFile;
+  sourceError?: string;
+  sourceLoading?: boolean;
 }) {
-  const lines = editorLines(finding);
+  const lines = source ? sourceEditorLines(source.content, finding) : editorLines(finding);
   return (
     <div>
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -254,14 +278,35 @@ function FindingEditorView({
             {finding.description ?? 'No scanner description provided.'}
           </p>
         </div>
-        <button
-          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-indigo-500 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-400"
-          onClick={() => onAskAi(finding)}
-          type="button"
-        >
-          <Bot className="h-4 w-4" /> Ask AI
-        </button>
+        <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+          <button
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-slate-800"
+            onClick={() => void onOpenSource(finding)}
+            type="button"
+          >
+            <FileCode2 className="h-4 w-4" />
+            {sourceLoading ? 'Opening...' : source ? 'Source opened' : 'Open source'}
+          </button>
+          <button
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-500 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-400"
+            onClick={() => onAskAi(finding)}
+            type="button"
+          >
+            <Bot className="h-4 w-4" /> Ask AI
+          </button>
+        </div>
       </div>
+      {sourceError ? (
+        <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm leading-6 text-amber-100">
+          {sourceError}
+        </div>
+      ) : null}
+      {source ? (
+        <div className="mb-4 rounded-xl border border-cyan-400/20 bg-cyan-400/10 p-3 text-xs leading-5 text-cyan-100">
+          Opened real source from {source.filePath} on branch {source.branch}.
+          Kodeye does not persist this file preview.
+        </div>
+      ) : null}
       <pre className="overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-0 text-xs leading-6 text-slate-300">
         {lines.map((line, index) => (
           <div
@@ -288,17 +333,17 @@ function FindingEditorView({
   );
 }
 
-function EmptyEditorView({ scan }: { scan: ScanJob }) {
+function EmptyEditorView({ file, scan }: { file?: AuditFile; scan: ScanJob }) {
   return (
     <div className="flex min-h-[360px] flex-col items-center justify-center text-center">
       <SearchCode className="h-12 w-12 text-cyan-300" />
       <h3 className="mt-4 text-lg font-bold text-white">
-        Auditing repository folders
+        {file?.isFolder ? 'Scanned folder selected' : 'No source finding selected'}
       </h3>
       <p className="mt-2 max-w-md text-sm leading-6 text-slate-400">
-        Kodeye is scanning {scan.repository.fullName ?? scan.repository.name}{' '}
-        from the repository root. Findings will appear here as masked,
-        reviewable code context after scanners save results.
+        {file?.isFolder
+          ? `${file.path} came from the actual scan inventory logs for ${scan.repository.fullName ?? scan.repository.name}. Select a finding file to open masked evidence or the connected GitHub source.`
+          : `Kodeye has not saved a file-level finding for ${scan.repository.fullName ?? scan.repository.name} yet.`}
       </p>
     </div>
   );
@@ -313,6 +358,31 @@ function groupFindingsByFile(findings: Finding[]): AuditFile[] {
   return [...grouped.entries()]
     .map(([path, groupedFindings]) => ({ findings: groupedFindings, path }))
     .sort((left, right) => right.findings.length - left.findings.length);
+}
+
+function foldersFromScanLogs(logs: ScanLog[], scan: ScanJob): AuditFile[] {
+  const folderLog = [...logs]
+    .reverse()
+    .find((log) => log.message.toLowerCase().startsWith('top audited folders:'));
+  const value = folderLog?.message.split(':').slice(1).join(':').trim();
+  if (!value || value === 'repository root only') {
+    return [
+      {
+        findings: [],
+        isFolder: true,
+        path: `${scan.repository.fullName ?? scan.repository.name}/`,
+      },
+    ];
+  }
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((path) => ({
+      findings: [],
+      isFolder: true,
+      path: path.endsWith('/') ? path : `${path}/`,
+    }));
 }
 
 function scannerProgress(logs: ScanLog[], status: ScanJob['status']) {
@@ -375,4 +445,21 @@ function editorLines(finding: Finding) {
     number: start + index,
     text,
   }));
+}
+
+function sourceEditorLines(content: string, finding: Finding) {
+  const allLines = content.split(/\r?\n/);
+  const startLine = Math.max(1, finding.lineStart ?? 1);
+  const endLine = Math.max(startLine, finding.lineEnd ?? startLine);
+  const windowStart = Math.max(1, startLine - 12);
+  const windowEnd = Math.min(allLines.length, endLine + 18);
+
+  return allLines.slice(windowStart - 1, windowEnd).map((text, index) => {
+    const number = windowStart + index;
+    return {
+      highlight: number >= startLine && number <= endLine,
+      number,
+      text,
+    };
+  });
 }

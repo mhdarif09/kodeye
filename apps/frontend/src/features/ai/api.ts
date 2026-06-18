@@ -1,5 +1,10 @@
 import { apiClient } from '../../lib/api-client';
-import type { AiFindingReview, AiFixProposal, AiFixPullRequest } from './types';
+import type {
+  AiFindingReview,
+  AiFixProposal,
+  AiFixPullRequest,
+  AiSourceFile,
+} from './types';
 
 export const aiApi = {
   reviewFinding: (findingId: string, question?: string) =>
@@ -7,6 +12,10 @@ export const aiApi = {
       authenticated: true,
       body: { question },
       method: 'POST',
+    }),
+  sourceFile: (findingId: string) =>
+    apiClient<AiSourceFile>(`/ai/findings/${findingId}/source`, {
+      authenticated: true,
     }),
   generateFix: (findingId: string, instruction?: string) =>
     apiClient<AiFixProposal>(`/ai/findings/${findingId}/fix`, {

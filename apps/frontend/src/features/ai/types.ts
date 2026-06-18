@@ -7,6 +7,13 @@ export interface AiFindingReview {
   verificationSteps: string[];
 }
 
+export interface AiSourceFile {
+  branch: string;
+  content: string;
+  filePath: string;
+  sourceSha: string;
+}
+
 export interface AiFixProposal {
   approvalToken: string;
   commitMessage: string;

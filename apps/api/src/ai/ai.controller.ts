@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -24,6 +24,14 @@ export class AiController {
     @Body() dto: ReviewFindingDto,
   ) {
     return this.aiService.reviewFinding(user.id, findingId, dto);
+  }
+
+  @Get('findings/:id/source')
+  sourceFile(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') findingId: string,
+  ) {
+    return this.aiService.sourceFile(user.id, findingId);
   }
 
   @Post('findings/:id/fix')

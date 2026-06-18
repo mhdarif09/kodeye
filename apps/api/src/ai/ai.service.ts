@@ -49,6 +49,26 @@ export class AiService {
     return this.groq.reviewFinding(this.findingContext(finding), dto.question);
   }
 
+  async sourceFile(userId: string, findingId: string) {
+    const finding = await this.findFinding(userId, findingId);
+    const target = await this.writableTarget(finding);
+    const content = await this.getContent(target);
+    const maxBytes = this.settings.getNumber('AI_FIX_MAX_FILE_BYTES', 30_000);
+    if (content.size > maxBytes) {
+      throw new BadRequestException(
+        `Source preview supports files up to ${maxBytes} bytes`,
+      );
+    }
+    const decoded = decodeGitHubContent(content);
+    assertNoLikelySecrets(decoded);
+    return {
+      branch: target.branch,
+      content: decoded,
+      filePath: target.filePath,
+      sourceSha: content.sha,
+    };
+  }
+
   async generateFix(
     userId: string,
     findingId: string,
