@@ -7,6 +7,7 @@ import {
   clearAccessToken,
   getAccessToken,
   setAccessToken,
+  setAuthSource,
 } from '../../lib/auth-token';
 import { authApi } from './api';
 import type { AuthResult, LoginInput, RegisterInput, User } from './types';
@@ -44,11 +45,12 @@ export function useAuth(options: { requireAuth?: boolean } = {}) {
 
   const completeAuth = (result: AuthResult) => {
     setAccessToken(result.accessToken);
+    setAuthSource(result.authSource ?? 'email');
     setUser(result.user);
     router.push(
       result.githubInstallOrganizationId
-        ? `/dashboard/integrations/github?auto_install=true&organization_id=${encodeURIComponent(result.githubInstallOrganizationId)}`
-        : '/dashboard',
+        ? `/onboarding?organization_id=${encodeURIComponent(result.githubInstallOrganizationId)}`
+        : '/onboarding',
     );
   };
 

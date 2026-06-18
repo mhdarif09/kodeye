@@ -2,8 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Activity, CreditCard, ShieldCheck, UsersRound } from 'lucide-react';
+import {
+  Activity,
+  CreditCard,
+  KeyRound,
+  ListChecks,
+  MessageSquareText,
+  ShieldCheck,
+  UsersRound,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import Link from 'next/link';
 
 import { Badge } from '../../../components/ui/badge';
 import { Card } from '../../../components/ui/card';
@@ -60,6 +69,50 @@ export default function AdminDashboardPage() {
         </p>
       </div>
       {error ? <Card className="text-red-600">{error}</Card> : null}
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        {[
+          {
+            href: '/dashboard/admin/sales-inquiries',
+            icon: MessageSquareText,
+            label: 'Sales inbox',
+            text: 'Review contact sales messages and update lead status.',
+          },
+          {
+            href: '/dashboard/admin/billing',
+            icon: CreditCard,
+            label: 'Billing',
+            text: 'Plans, prices, currencies, and billing settings.',
+          },
+          {
+            href: '/dashboard/admin/users',
+            icon: UsersRound,
+            label: 'Users',
+            text: 'Roles, suspensions, reactivation, and account controls.',
+          },
+          {
+            href: '/dashboard/admin/settings',
+            icon: KeyRound,
+            label: 'Settings',
+            text: 'Runtime provider keys, app settings, and checks.',
+          },
+          {
+            href: '/dashboard/admin/audit-logs',
+            icon: ListChecks,
+            label: 'Audit logs',
+            text: 'Track admin changes and sensitive operations.',
+          },
+        ].map(({ href, icon: Icon, label, text }) => (
+          <Link
+            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft transition hover:-translate-y-0.5 hover:shadow-lg"
+            href={href}
+            key={href}
+          >
+            <Icon className="h-5 w-5 text-brand-600" />
+            <h2 className="mt-4 font-bold text-slate-950">{label}</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">{text}</p>
+          </Link>
+        ))}
+      </div>
       <div className="grid gap-4 md:grid-cols-4">
         {stats.map(({ icon: Icon, label, value }) => (
           <Card key={label}>

@@ -1,0 +1,64 @@
+# Pull and Rebuild Release
+
+Use this when the server is already provisioned and DevOps only needs to pull
+the latest Kodeye code, apply database migrations, and rebuild containers.
+
+Run every command from `/opt/kodeye`.
+
+## 1. Pull latest code
+
+```bash
+git status
+git pull origin main
+```
+
+If the server tracks a different production branch, replace `main` with that
+branch name.
+
+## 2. Apply database migrations
+
+This release adds the `sales_inquiries` table for the public Contact Sales form
+and admin sales inbox, so run migrations before restarting traffic.
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml run --rm api pnpm --filter @kodeye/api prisma:migrate:deploy
+```
+
+## 3. Rebuild and restart
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml build
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d
+```
+
+## 4. Verify containers
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml ps
+docker compose --env-file .env.production -f docker-compose.prod.yml logs --tail=100 api
+docker compose --env-file .env.production -f docker-compose.prod.yml logs --tail=100 frontend
+```
+
+## 5. Smoke test
+
+```bash
+curl http://127.0.0.1:3001/api/health
+curl https://backend.kodeye.net/api/health
+```
+
+Open these pages after deploy:
+
+- `https://kodeye.net`
+- `https://kodeye.net/services`
+- `https://kodeye.net/contact-sales`
+- `https://app.kodeye.net/dashboard/admin/sales-inquiries`
+
+## What changed in this release
+
+- Global Kodeye loading screen for route and auth/data transitions.
+- Startup landing page with services, pricing, testimonials, and audit animation.
+- Detailed individual service pages.
+- Public Contact Sales page connected to admin sales inbox.
+- Admin sidebar cleanup: one main Admin entry, sub-admin links inside Admin
+  Console.
+- GitHub sign-in/onboarding flow improvements for app install, auth, and sync.

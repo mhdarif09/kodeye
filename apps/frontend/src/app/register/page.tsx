@@ -1,17 +1,17 @@
 'use client';
 
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Github } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useEffect, useState } from 'react';
 
 import { AuthShell } from '../../components/layout/auth-shell';
-import { GitHubAuthButton } from '../../components/github-auth-button';
+import { GlobalLoadingScreen } from '../../components/layout/global-loading-screen';
 import { Alert } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { Spinner } from '../../components/ui/spinner';
 import { useAuth } from '../../features/auth/use-auth';
+import { getApiUrl } from '../../lib/api-client';
 import { getErrorMessage } from '../../lib/utils';
 
 export default function RegisterPage() {
@@ -23,7 +23,7 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && user) router.replace('/dashboard');
+    if (!isLoading && user) router.replace('/onboarding');
   }, [isLoading, router, user]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -40,21 +40,29 @@ export default function RegisterPage() {
   }
 
   if (isLoading || user) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="flex items-center gap-3 text-sm font-medium text-slate-600">
-          <Spinner />
-          Restoring your session...
-        </div>
-      </main>
-    );
+    return <GlobalLoadingScreen message="Restoring your session..." />;
   }
 
   return (
     <AuthShell
-      description="Create an account and Kodeye will prepare your first organization automatically."
-      title="Create your Kodeye account"
+      description="Create a Kodeye workspace with GitHub, or use email if you want to start with manual setup or services."
+      title="Start with Kodeye"
     >
+      <Button
+        className="w-full"
+        onClick={() => window.location.assign(getApiUrl('/auth/github'))}
+        type="button"
+      >
+        <Github className="h-5 w-5" />
+        Continue with GitHub
+      </Button>
+
+      <div className="my-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+        <span className="h-px flex-1 bg-slate-200" />
+        or use email
+        <span className="h-px flex-1 bg-slate-200" />
+      </div>
+
       <form className="space-y-5" onSubmit={handleSubmit}>
         {error ? <Alert tone="error">{error}</Alert> : null}
         <Input
@@ -99,20 +107,11 @@ export default function RegisterPage() {
             )}
           </button>
         </div>
-        <p className="text-xs leading-5 text-slate-500">
-          Use at least 8 characters. Your password is securely hashed by the
-          API.
-        </p>
         <Button className="w-full" disabled={isSubmitting} type="submit">
-          {isSubmitting ? 'Creating account...' : 'Create Account'}
+          {isSubmitting ? 'Creating account...' : 'Create account with email'}
         </Button>
       </form>
-      <div className="my-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-        <span className="h-px flex-1 bg-slate-200" />
-        or
-        <span className="h-px flex-1 bg-slate-200" />
-      </div>
-      <GitHubAuthButton />
+
       <p className="mt-6 text-center text-sm text-slate-500">
         Already have an account?{' '}
         <Link

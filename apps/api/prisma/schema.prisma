@@ -138,6 +138,14 @@ enum EnterpriseRequestStatus {
   CONTACTED
 }
 
+enum SalesInquiryStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  WON
+  LOST
+}
+
 enum SettingValueType {
   STRING
   NUMBER
@@ -763,4 +771,26 @@ model EnterprisePlanRequest {
 
   @@index([organizationId, status])
   @@map("enterprise_plan_requests")
+}
+
+model SalesInquiry {
+  id             String             @id @default(cuid())
+  name           String             @db.VarChar(255)
+  email          String             @db.VarChar(255)
+  companyName    String             @map("company_name") @db.VarChar(255)
+  phone          String?            @db.VarChar(100)
+  service        String             @db.VarChar(120)
+  budget         String?            @db.VarChar(120)
+  timeline       String?            @db.VarChar(120)
+  message        String             @db.Text
+  source         String             @default("contact-sales") @db.VarChar(120)
+  status         SalesInquiryStatus @default(NEW)
+  adminNote      String?            @map("admin_note") @db.Text
+  contactedAt    DateTime?          @map("contacted_at")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@index([service])
+  @@map("sales_inquiries")
 }

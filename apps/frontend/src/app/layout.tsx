@@ -7,7 +7,8 @@ export const metadata: Metadata = {
     default: 'Kodeye',
     template: '%s | Kodeye',
   },
-  description: 'Simple, trustworthy codebase security audit workflows.',
+  description:
+    'AI-powered engineering and automation for codebase audit, business automation, DevOps, and digitalization.',
 };
 
 export default function RootLayout({

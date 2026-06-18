@@ -1,17 +1,17 @@
 'use client';
 
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Github } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useEffect, useState } from 'react';
 
 import { AuthShell } from '../../components/layout/auth-shell';
-import { GitHubAuthButton } from '../../components/github-auth-button';
+import { GlobalLoadingScreen } from '../../components/layout/global-loading-screen';
 import { Alert } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { Spinner } from '../../components/ui/spinner';
 import { useAuth } from '../../features/auth/use-auth';
+import { getApiUrl } from '../../lib/api-client';
 import { getErrorMessage } from '../../lib/utils';
 
 export default function LoginPage() {
@@ -24,7 +24,7 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && user) router.replace('/dashboard');
+    if (!isLoading && user) router.replace('/onboarding');
   }, [isLoading, router, user]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -41,21 +41,29 @@ export default function LoginPage() {
   }
 
   if (isLoading || user) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="flex items-center gap-3 text-sm font-medium text-slate-600">
-          <Spinner />
-          Restoring your session...
-        </div>
-      </main>
-    );
+    return <GlobalLoadingScreen message="Restoring your session..." />;
   }
 
   return (
     <AuthShell
-      description="Welcome back. Sign in to continue organizing your security workspace."
-      title="Sign in to Kodeye"
+      description="Sign in with GitHub for repository sync, or use email if you are starting with services or manual setup."
+      title="Continue to Kodeye"
     >
+      <Button
+        className="w-full"
+        onClick={() => window.location.assign(getApiUrl('/auth/github'))}
+        type="button"
+      >
+        <Github className="h-5 w-5" />
+        Continue with GitHub
+      </Button>
+
+      <div className="my-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+        <span className="h-px flex-1 bg-slate-200" />
+        or use email
+        <span className="h-px flex-1 bg-slate-200" />
+      </div>
+
       <form className="space-y-5" onSubmit={handleSubmit}>
         {error ? <Alert tone="error">{error}</Alert> : null}
         <Input
@@ -91,15 +99,10 @@ export default function LoginPage() {
           </button>
         </div>
         <Button className="w-full" disabled={isSubmitting} type="submit">
-          {isSubmitting ? 'Signing in...' : 'Sign In'}
+          {isSubmitting ? 'Signing in...' : 'Sign in with email'}
         </Button>
       </form>
-      <div className="my-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-        <span className="h-px flex-1 bg-slate-200" />
-        or
-        <span className="h-px flex-1 bg-slate-200" />
-      </div>
-      <GitHubAuthButton />
+
       <p className="mt-6 text-center text-sm text-slate-500">
         New to Kodeye?{' '}
         <Link

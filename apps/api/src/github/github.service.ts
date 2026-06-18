@@ -25,13 +25,18 @@ export class GitHubService {
     private readonly billing: BillingService,
   ) {}
 
-  async prepareInstallation(userId: string, organizationId: string) {
+  async prepareInstallation(
+    userId: string,
+    organizationId: string,
+    returnTo: 'github-integration' | 'onboarding' = 'github-integration',
+  ) {
     const organization = await this.organizationsService.findOwnedById(
       userId,
       organizationId,
     );
     const state = this.githubAppService.createInstallationState({
       organizationId: organization.id,
+      returnTo,
       userId,
     });
     return { installUrl: this.githubAppService.getInstallationUrl(state) };
@@ -76,7 +81,7 @@ export class GitHubService {
         'GitHub installation is already connected to another organization',
       );
     }
-    return this.prisma.gitHubInstallation.upsert({
+    const installation = await this.prisma.gitHubInstallation.upsert({
       create: {
         githubAccountLogin: details.account.login,
         githubAccountType: details.account.type,
@@ -96,6 +101,29 @@ export class GitHubService {
       },
       where: { installationId },
     });
+
+    try {
+      const repositories = await this.syncRepositories(state.userId, {
+        installationId,
+        organizationId: state.organizationId,
+      });
+      return {
+        installation,
+        returnTo: state.returnTo ?? 'github-integration',
+        syncError: null,
+        syncedCount: repositories.length,
+      };
+    } catch (error) {
+      return {
+        installation,
+        returnTo: state.returnTo ?? 'github-integration',
+        syncError:
+          error instanceof Error
+            ? error.message
+            : 'GitHub repositories could not be synced automatically.',
+        syncedCount: null,
+      };
+    }
   }
 
   findInstallations(userId: string) {

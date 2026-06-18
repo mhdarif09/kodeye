@@ -162,6 +162,7 @@ export class GitHubOAuthService {
 
     return {
       accessToken,
+      authSource: 'github',
       githubInstallOrganizationId:
         githubInstallationCount === 0 ? ownedOrganization?.id : undefined,
       user,

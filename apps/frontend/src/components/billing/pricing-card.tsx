@@ -31,9 +31,7 @@ export function PricingCard({ plan }: { plan: Plan }) {
       <Link
         className="mt-6 rounded-xl bg-indigo-600 px-4 py-3 text-center text-sm font-semibold text-white"
         href={
-          plan.isEnterprise
-            ? '/dashboard/billing?enterprise=true'
-            : '/dashboard/billing'
+          plan.isEnterprise ? '/contact-sales' : '/dashboard/billing'
         }
       >
         {plan.isEnterprise ? 'Contact sales' : 'Choose plan'}

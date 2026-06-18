@@ -12,4 +12,5 @@ export interface GitHubInstallationDetails {
 export interface GitHubInstallationState {
   userId: string;
   organizationId: string;
+  returnTo?: 'github-integration' | 'onboarding';
 }

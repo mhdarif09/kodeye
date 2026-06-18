@@ -6,9 +6,12 @@ import type {
 } from './types';
 
 export const githubApi = {
-  getInstallUrl: (organizationId: string) =>
+  getInstallUrl: (
+    organizationId: string,
+    returnTo: 'github-integration' | 'onboarding' = 'github-integration',
+  ) =>
     apiClient<GitHubInstallResult>(
-      `/github/install?organizationId=${encodeURIComponent(organizationId)}`,
+      `/github/install?organizationId=${encodeURIComponent(organizationId)}&returnTo=${encodeURIComponent(returnTo)}`,
       { authenticated: true },
     ),
   installations: () =>

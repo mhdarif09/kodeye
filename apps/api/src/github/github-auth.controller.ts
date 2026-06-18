@@ -55,6 +55,7 @@ export class GitHubAuthController {
     );
     // TODO: Replace URL token redirect with a one-time exchange or HttpOnly cookie.
     callbackUrl.searchParams.set('token', result.accessToken);
+    callbackUrl.searchParams.set('auth_source', result.authSource);
     if (result.githubInstallOrganizationId) {
       callbackUrl.searchParams.set('install_github_app', 'true');
       callbackUrl.searchParams.set(

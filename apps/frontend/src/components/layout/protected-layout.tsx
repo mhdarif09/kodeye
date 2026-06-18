@@ -5,21 +5,14 @@ import type { ReactNode } from 'react';
 import { useAuth } from '../../features/auth/use-auth';
 import { AppSidebar } from './app-sidebar';
 import { AppTopbar } from './app-topbar';
+import { GlobalLoadingScreen } from './global-loading-screen';
 import { MobileNav } from './mobile-nav';
-import { Spinner } from '../ui/spinner';
 
 export function ProtectedLayout({ children }: { children: ReactNode }) {
   const { isLoading, logout, user } = useAuth({ requireAuth: true });
 
   if (isLoading || !user) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="flex items-center gap-3 text-sm font-medium text-slate-600">
-          <Spinner />
-          Securing your workspace...
-        </div>
-      </main>
-    );
+    return <GlobalLoadingScreen message="Securing your workspace..." />;
   }
 
   return (

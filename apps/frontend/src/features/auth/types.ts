@@ -10,6 +10,7 @@ export interface User {
 
 export interface AuthResult {
   accessToken: string;
+  authSource?: 'email' | 'github';
   githubInstallOrganizationId?: string;
   user: User;
 }

@@ -116,6 +116,7 @@ export class AuthService {
 
     return {
       accessToken,
+      authSource: 'email',
       githubInstallOrganizationId:
         githubInstallationCount === 0 ? ownedOrganization?.id : undefined,
       user,

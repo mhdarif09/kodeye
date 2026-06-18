@@ -4,9 +4,6 @@ import {
   Plug,
   Settings,
   CreditCard,
-  KeyRound,
-  ListChecks,
-  UsersRound,
   Shield,
   ShieldCheck,
   SquareCode,
@@ -28,17 +25,5 @@ export const dashboardNavigation = [
   { href: '/dashboard/integrations', label: 'Integrations', icon: Plug },
   { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
   { href: '/dashboard/admin', label: 'Admin', icon: Shield },
-  { href: '/dashboard/admin/billing', label: 'Admin Billing', icon: Shield },
-  { href: '/dashboard/admin/users', label: 'Admin Users', icon: UsersRound },
-  {
-    href: '/dashboard/admin/settings',
-    label: 'Admin Settings',
-    icon: KeyRound,
-  },
-  {
-    href: '/dashboard/admin/audit-logs',
-    label: 'Admin Audit',
-    icon: ListChecks,
-  },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ];

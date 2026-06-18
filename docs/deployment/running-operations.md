@@ -2,6 +2,9 @@
 
 Semua command dijalankan dari `/opt/kodeye`.
 
+Untuk release yang tinggal `git pull` dan rebuild di VPS yang sudah jalan, lihat
+[`pull-and-rebuild.md`](./pull-and-rebuild.md).
+
 ```bash
 # Start / stop / restart / status
 docker compose --env-file .env.production -f docker-compose.prod.yml up -d

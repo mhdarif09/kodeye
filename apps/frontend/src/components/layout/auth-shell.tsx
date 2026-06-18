@@ -37,11 +37,11 @@ export function AuthShell({
             Kodeye workspace
           </p>
           <h2 className="mt-4 text-4xl font-bold leading-tight">
-            Turn codebase security setup into a clear, approachable workflow.
+            AI-powered engineering and automation for modern teams.
           </h2>
           <p className="mt-5 leading-7 text-slate-300">
-            Start with organizations and repository metadata. GitHub integration
-            and automated scans arrive in a later phase.
+            Improve codebase quality, automate business operations, and build
+            the digital systems your company needs to move faster.
           </p>
         </div>
       </section>

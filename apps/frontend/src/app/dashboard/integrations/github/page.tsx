@@ -62,6 +62,8 @@ export default function GitHubIntegrationPage() {
       const parameters = new URLSearchParams(window.location.search);
       const status = parameters.get('status');
       const installationId = parameters.get('installation_id');
+      const syncedCount = parameters.get('synced');
+      const syncError = parameters.get('sync_error');
 
       if (status !== 'connected' || !installationId) {
         const autoInstallOrganizationId = parameters.get('organization_id');
@@ -92,6 +94,18 @@ export default function GitHubIntegrationPage() {
       );
       if (!installation) {
         setError('GitHub installation was connected but could not be loaded.');
+        return;
+      }
+
+      if (syncedCount !== null) {
+        setSuccess(`${syncedCount} GitHub repositories synced successfully.`);
+        router.replace('/dashboard/integrations/github');
+        return;
+      }
+
+      if (syncError) {
+        setError(syncError);
+        router.replace('/dashboard/integrations/github');
         return;
       }
 

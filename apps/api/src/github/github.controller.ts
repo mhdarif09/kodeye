@@ -39,6 +39,7 @@ export class GitHubController {
     return this.githubService.prepareInstallation(
       user.id,
       query.organizationId,
+      query.returnTo,
     );
   }
 
@@ -47,20 +48,29 @@ export class GitHubController {
     @Query() query: GitHubInstallCallbackDto,
     @Res() response: Response,
   ): Promise<void> {
-    await this.githubService.completeInstallation(query);
+    const result = await this.githubService.completeInstallation(query);
     const appUrl = this.configService.get<string>(
       'APP_URL',
       'http://localhost:3000',
     );
-    const frontendUrl = new URL(
-      this.configService.get<string>(
-        'FRONTEND_GITHUB_INTEGRATION_URL',
-        new URL('/dashboard/integrations/github', appUrl).toString(),
-      ),
-    );
+    const frontendUrl =
+      result.returnTo === 'onboarding'
+        ? new URL('/onboarding', appUrl)
+        : new URL(
+            this.configService.get<string>(
+              'FRONTEND_GITHUB_INTEGRATION_URL',
+              new URL('/dashboard/integrations/github', appUrl).toString(),
+            ),
+          );
     frontendUrl.searchParams.set('status', 'connected');
     frontendUrl.searchParams.set('installation_id', query.installation_id);
     frontendUrl.searchParams.set('setup_action', query.setup_action);
+    if (result.syncedCount !== null) {
+      frontendUrl.searchParams.set('synced', result.syncedCount.toString());
+    }
+    if (result.syncError) {
+      frontendUrl.searchParams.set('sync_error', result.syncError);
+    }
     response.redirect(303, frontendUrl.toString());
   }
 
