@@ -28,6 +28,8 @@ const initialForm = {
   isPrivate: false,
 };
 
+type ManualMode = 'public-url' | 'upload';
+
 export default function RepositoriesPage() {
   const router = useRouter();
   const [repositories, setRepositories] = useState<Repository[]>([]);
@@ -38,6 +40,7 @@ export default function RepositoriesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [manualMode, setManualMode] = useState<ManualMode>('public-url');
   const [scanningId, setScanningId] = useState('');
   const [updatingAutomationId, setUpdatingAutomationId] = useState('');
 
@@ -73,11 +76,18 @@ export default function RepositoriesPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
+    if (!isPublicGitHubUrl(form.repoUrl)) {
+      setError(
+        'Manual scans currently require a public GitHub repository URL. Use the GitHub App for private repositories.',
+      );
+      return;
+    }
     setIsSubmitting(true);
     try {
       const repository = await repositoriesApi.create({
         ...form,
-        repoUrl: form.repoUrl || undefined,
+        isPrivate: false,
+        repoUrl: form.repoUrl,
       });
       setRepositories((items) => [repository, ...items]);
       setForm({ ...initialForm, organizationId: form.organizationId });
@@ -157,9 +167,9 @@ export default function RepositoriesPage() {
       </div>
 
       <Alert className="mt-6">
-        Repositories can be added manually or synced from a GitHub App
-        installation. GitHub repositories can automatically scan pushes and pull
-        requests.
+        Manual scans currently support public GitHub repository URLs only.
+        Private repositories should be connected through the GitHub App.
+        ZIP/folder upload will use a separate artifact scanning flow.
       </Alert>
       {error ? (
         <Alert className="mt-4" tone="error">
@@ -315,15 +325,52 @@ export default function RepositoriesPage() {
       )}
 
       <Modal
-        description="Public GitHub repositories can be scanned manually after they are added. Use the GitHub App for private repositories."
+        description="Manual scans support public GitHub repository URLs. Private repositories use the GitHub App. ZIP/folder upload is the next artifact flow."
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Add repository"
       >
         <form className="space-y-4" onSubmit={handleSubmit}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button
+              className={
+                manualMode === 'public-url'
+                  ? 'rounded-xl border border-brand-500 bg-brand-50 p-4 text-left ring-4 ring-brand-100'
+                  : 'rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-brand-200'
+              }
+              onClick={() => setManualMode('public-url')}
+              type="button"
+            >
+              <p className="font-bold text-slate-950">Public repo URL</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Ready now. Clone and scan a public GitHub repository.
+              </p>
+            </button>
+            <button
+              className={
+                manualMode === 'upload'
+                  ? 'rounded-xl border border-amber-400 bg-amber-50 p-4 text-left ring-4 ring-amber-100'
+                  : 'rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-amber-200'
+              }
+              onClick={() => setManualMode('upload')}
+              type="button"
+            >
+              <p className="font-bold text-slate-950">Upload ZIP/folder</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Coming next. Needs artifact upload and extraction pipeline.
+              </p>
+            </button>
+          </div>
+          {manualMode === 'upload' ? (
+            <Alert tone="info">
+              ZIP/folder upload is not enabled yet. For now, use a public GitHub
+              URL or connect private code through the GitHub App.
+            </Alert>
+          ) : null}
           <Select
             id="repository-organization"
             label="Organization"
+            disabled={manualMode === 'upload'}
             onChange={(event) =>
               setForm({ ...form, organizationId: event.target.value })
             }
@@ -339,6 +386,7 @@ export default function RepositoriesPage() {
           <Input
             id="repository-name"
             label="Repository name"
+            disabled={manualMode === 'upload'}
             onChange={(event) => setForm({ ...form, name: event.target.value })}
             placeholder="studentcare-api"
             required
@@ -346,39 +394,35 @@ export default function RepositoriesPage() {
           />
           <Input
             id="repository-url"
-            label="Repository URL (optional)"
+            label="Public GitHub repository URL"
+            disabled={manualMode === 'upload'}
             onChange={(event) =>
               setForm({ ...form, repoUrl: event.target.value })
             }
             placeholder="https://github.com/example/repository"
+            required
             type="url"
             value={form.repoUrl}
           />
           <Input
             id="default-branch"
             label="Default branch"
+            disabled={manualMode === 'upload'}
             onChange={(event) =>
               setForm({ ...form, defaultBranch: event.target.value })
             }
             required
             value={form.defaultBranch}
           />
-          <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-3 text-sm text-slate-700">
-            <input
-              checked={form.isPrivate}
-              className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
-              onChange={(event) =>
-                setForm({ ...form, isPrivate: event.target.checked })
-              }
-              type="checkbox"
-            />
-            This is a private repository
-          </label>
+          <Alert>
+            Manual URL scans are public-only. For private code, install the
+            Kodeye GitHub App so access stays scoped and auditable.
+          </Alert>
           <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
             <Button onClick={() => setIsModalOpen(false)} variant="secondary">
               Cancel
             </Button>
-            <Button disabled={isSubmitting} type="submit">
+            <Button disabled={isSubmitting || manualMode === 'upload'} type="submit">
               {isSubmitting ? 'Adding...' : 'Add repository'}
             </Button>
           </div>

@@ -347,7 +347,7 @@ function OnboardingContent() {
                     />
                     <StartMethodButton
                       active={startMethod === 'manual'}
-                      description="Add a public GitHub URL now. ZIP upload can come next."
+                      description="Scan a public GitHub URL now. ZIP/folder upload is the next artifact flow."
                       icon={UploadCloud}
                       onClick={() => setStartMethod('manual')}
                       title="Manual repository"
@@ -443,10 +443,10 @@ function OnboardingContent() {
                     Start with a public repository
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
-                    You can add a public GitHub repository URL from the
-                    repositories page. Full ZIP/folder upload is a good next
-                    product step, but this keeps the current scanner flow
-                    stable.
+                    Manual scanning currently accepts public GitHub repository
+                    URLs. Private repositories should use the GitHub App.
+                    ZIP/folder upload will be handled as a separate artifact
+                    scanning flow.
                   </p>
                   <Button
                     className="mt-5"

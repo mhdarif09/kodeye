@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -48,17 +49,28 @@ export class RepositoriesService {
   async create(userId: string, dto: CreateRepositoryDto) {
     await this.organizationsService.findOwnedById(userId, dto.organizationId);
     await this.billing.assertLimits(dto.organizationId, 'repository');
+    const repoUrl = dto.repoUrl?.trim();
+    if (!repoUrl || !isPublicGitHubRepositoryUrl(repoUrl)) {
+      throw new BadRequestException(
+        'Manual repositories must use a public GitHub repository URL. Use the GitHub App for private repositories or upload ZIP/folder when artifact scanning is enabled.',
+      );
+    }
+    if (dto.isPrivate) {
+      throw new BadRequestException(
+        'Manual scans only support public repositories. Connect private repositories through the GitHub App.',
+      );
+    }
 
     try {
       return await this.prisma.repository.create({
         data: {
           defaultBranch: dto.defaultBranch ?? 'main',
-          htmlUrl: dto.repoUrl,
-          isPrivate: dto.isPrivate ?? false,
+          htmlUrl: repoUrl,
+          isPrivate: false,
           name: dto.name.trim(),
           organizationId: dto.organizationId,
           provider: RepositoryProvider.MANUAL,
-          repoUrl: dto.repoUrl,
+          repoUrl,
         },
       });
     } catch (error) {
@@ -109,5 +121,20 @@ export class RepositoriesService {
       data: dto,
       where: { id: repository.id },
     });
+  }
+}
+
+function isPublicGitHubRepositoryUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === 'https:' &&
+      url.hostname.toLowerCase() === 'github.com' &&
+      !url.username &&
+      !url.password &&
+      /^\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\.git)?\/?$/.test(url.pathname)
+    );
+  } catch {
+    return false;
   }
 }
