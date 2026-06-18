@@ -31,6 +31,13 @@ docker compose --env-file .env.production -f docker-compose.prod.yml build
 docker compose --env-file .env.production -f docker-compose.prod.yml up -d
 ```
 
+If DevOps wants a clean rebuild without using old image layers:
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml build --no-cache
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d
+```
+
 ## 4. Verify containers
 
 ```bash
@@ -51,7 +58,20 @@ Open these pages after deploy:
 - `https://kodeye.net`
 - `https://kodeye.net/services`
 - `https://kodeye.net/contact-sales`
+- `https://app.kodeye.net/onboarding`
+- `https://app.kodeye.net/dashboard/repositories`
+- `https://app.kodeye.net/dashboard/scans`
 - `https://app.kodeye.net/dashboard/admin/sales-inquiries`
+
+## Quick operator checklist
+
+1. `git pull origin main`
+2. Run `prisma:migrate:deploy`
+3. Rebuild `api`, `frontend`, and `worker`
+4. Start containers with `up -d`
+5. Check `ps` and logs
+6. Smoke test backend health, landing page, login, onboarding, repositories,
+   scans, contact sales, and admin sales inbox
 
 ## What changed in this release
 
@@ -62,3 +82,12 @@ Open these pages after deploy:
 - Admin sidebar cleanup: one main Admin entry, sub-admin links inside Admin
   Console.
 - GitHub sign-in/onboarding flow improvements for app install, auth, and sync.
+- Persistent onboarding completion so completed users return to dashboard after
+  logout/login.
+- Manual repository flow clarified: public GitHub URL is supported now; private
+  repositories use the GitHub App; ZIP/folder upload is a future artifact scan
+  flow.
+- Scan workspace now shows real scanned folders/files from scan findings/logs
+  instead of placeholder folders.
+- Connected GitHub findings can open a safe source preview for the target file
+  and keep AI review/fix actions attached to that finding.
