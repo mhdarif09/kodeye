@@ -44,10 +44,14 @@ export default function RepositoriesPage() {
   const loadData = useCallback(async () => {
     setError('');
     try {
-      const [repositoryItems, organizationItems] = await Promise.all([
+      let [repositoryItems, organizationItems] = await Promise.all([
         repositoriesApi.list(),
         organizationsApi.list(),
       ]);
+      if (organizationItems.length === 0) {
+        const created = await organizationsApi.create('My Organization');
+        organizationItems = [created];
+      }
       setRepositories(repositoryItems);
       setOrganizations(organizationItems);
       setForm((current) => ({

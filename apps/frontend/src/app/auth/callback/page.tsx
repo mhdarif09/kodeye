@@ -6,7 +6,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { GlobalLoadingScreen } from '../../../components/layout/global-loading-screen';
 import { Alert } from '../../../components/ui/alert';
-import { setAccessToken, setAuthSource } from '../../../lib/auth-token';
+import {
+  isOnboardingCompleted,
+  setAccessToken,
+  setAuthSource,
+} from '../../../lib/auth-token';
 
 function AuthCallbackContent() {
   const router = useRouter();
@@ -26,10 +30,14 @@ function AuthCallbackContent() {
     );
     window.history.replaceState({}, '', '/auth/callback');
     const installOrganizationId = searchParams.get('organization_id');
+    const needsGitHubInstall =
+      searchParams.get('install_github_app') === 'true' &&
+      installOrganizationId;
+    const onboardingPath = needsGitHubInstall
+      ? `/onboarding?organization_id=${encodeURIComponent(installOrganizationId)}`
+      : '/onboarding';
     router.replace(
-      searchParams.get('install_github_app') === 'true' && installOrganizationId
-        ? `/onboarding?organization_id=${encodeURIComponent(installOrganizationId)}`
-        : '/onboarding',
+      isOnboardingCompleted() ? '/dashboard' : onboardingPath,
     );
   }, [router, searchParams]);
 

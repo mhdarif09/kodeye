@@ -123,7 +123,14 @@ export function CodeAuditWorkspace({
                 {file.path.endsWith('/') ? (
                   <Folder className="h-4 w-4 shrink-0 text-cyan-300" />
                 ) : (
-                  <FileCode2 className="h-4 w-4 shrink-0 text-slate-500" />
+                  <FileCode2
+                    className={cn(
+                      'h-4 w-4 shrink-0',
+                      selected?.path === file.path
+                        ? 'text-cyan-200'
+                        : 'text-slate-500',
+                    )}
+                  />
                 )}
                 <span className="truncate font-mono text-xs">{file.path}</span>
                 {file.findings.length ? (
@@ -195,7 +202,12 @@ export function CodeAuditWorkspace({
                     >
                       {step.label}
                     </p>
-                    <p className="truncate text-xs text-slate-500">
+                    <p
+                      className={cn(
+                        'truncate text-xs',
+                        state === 'waiting' ? 'text-slate-500' : 'text-slate-300',
+                      )}
+                    >
                       {latestMatchingLog(logs, step.match) ?? 'Waiting'}
                     </p>
                   </div>

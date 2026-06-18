@@ -34,11 +34,12 @@ import type {
 import { organizationsApi } from '../../features/organizations/api';
 import type { Organization } from '../../features/organizations/types';
 import { useAuth } from '../../features/auth/use-auth';
-import { getAuthSource } from '../../lib/auth-token';
+import {
+  completeOnboarding,
+  getAuthSource,
+  isOnboardingCompleted,
+} from '../../lib/auth-token';
 import { getErrorMessage } from '../../lib/utils';
-
-const SOURCE_STORAGE_KEY = 'kodeye_onboarding_source';
-const DONE_STORAGE_KEY = 'kodeye_onboarding_completed';
 
 const sourceOptions = [
   'Google Search',
@@ -91,19 +92,21 @@ function OnboardingContent() {
     (repository) =>
       !organizationId || repository.organizationId === organizationId,
   ).length;
-  const onboardingDone =
-    typeof window !== 'undefined' &&
-    window.localStorage.getItem(DONE_STORAGE_KEY) === 'true';
+  const onboardingDone = isOnboardingCompleted();
 
   const loadData = useCallback(async () => {
     setError('');
     try {
-      const [organizationItems, installationItems, repositoryItems] =
+      let [organizationItems, installationItems, repositoryItems] =
         await Promise.all([
           organizationsApi.list(),
           githubApi.installations(),
           githubApi.repositories(),
         ]);
+      if (organizationItems.length === 0) {
+        const created = await organizationsApi.create('My Organization');
+        organizationItems = [created];
+      }
       const preferredOrganizationId =
         searchParams.get('organization_id') ||
         organizationId ||
@@ -198,9 +201,8 @@ function OnboardingContent() {
 
   useEffect(() => {
     if (isAuthLoading || isLoading || !user) return;
-    if (hasSyncedRepositories && onboardingDone) router.replace('/dashboard');
+    if (onboardingDone) router.replace('/dashboard');
   }, [
-    hasSyncedRepositories,
     isAuthLoading,
     isLoading,
     onboardingDone,
@@ -225,9 +227,18 @@ function OnboardingContent() {
   }
 
   function finishOnboarding() {
-    window.localStorage.setItem(SOURCE_STORAGE_KEY, source || 'Not specified');
-    window.localStorage.setItem(DONE_STORAGE_KEY, 'true');
+    completeOnboarding(source || 'Not specified');
     router.replace('/dashboard');
+  }
+
+  function continueToManualRepository() {
+    completeOnboarding('Manual repository');
+    router.push('/dashboard/repositories');
+  }
+
+  function continueToServices() {
+    completeOnboarding('Services');
+    router.push('/services');
   }
 
   if (isAuthLoading || isLoading || !user) {
@@ -439,7 +450,7 @@ function OnboardingContent() {
                   </p>
                   <Button
                     className="mt-5"
-                    onClick={() => router.push('/dashboard/repositories')}
+                    onClick={continueToManualRepository}
                   >
                     Add repository manually
                   </Button>
@@ -458,7 +469,7 @@ function OnboardingContent() {
                   </p>
                   <Button
                     className="mt-5"
-                    onClick={() => router.push('/services')}
+                    onClick={continueToServices}
                   >
                     Explore services
                   </Button>

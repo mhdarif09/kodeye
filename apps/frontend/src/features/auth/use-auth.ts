@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   clearAccessToken,
   getAccessToken,
+  isOnboardingCompleted,
   setAccessToken,
   setAuthSource,
 } from '../../lib/auth-token';
@@ -47,10 +48,11 @@ export function useAuth(options: { requireAuth?: boolean } = {}) {
     setAccessToken(result.accessToken);
     setAuthSource(result.authSource ?? 'email');
     setUser(result.user);
+    const onboardingPath = result.githubInstallOrganizationId
+      ? `/onboarding?organization_id=${encodeURIComponent(result.githubInstallOrganizationId)}`
+      : '/onboarding';
     router.push(
-      result.githubInstallOrganizationId
-        ? `/onboarding?organization_id=${encodeURIComponent(result.githubInstallOrganizationId)}`
-        : '/onboarding',
+      isOnboardingCompleted() ? '/dashboard' : onboardingPath,
     );
   };
 

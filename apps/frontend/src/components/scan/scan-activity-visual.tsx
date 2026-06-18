@@ -27,11 +27,11 @@ export function ScanActivityVisual({ status }: { status: ScanStatus }) {
 
   return (
     <Card className="relative min-h-72 overflow-hidden bg-slate-950 text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(79,70,229,0.25),transparent_58%)]" />
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,rgba(79,70,229,0.25),transparent_58%)]" />
       {active ? (
-        <div className="absolute inset-x-6 top-1/2 h-px animate-pulse bg-gradient-to-r from-transparent via-cyan-300 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-6 top-1/2 z-0 h-px animate-pulse bg-gradient-to-r from-transparent via-cyan-300 to-transparent" />
       ) : null}
-      <div className="relative flex min-h-60 flex-col items-center justify-center text-center">
+      <div className="relative z-10 flex min-h-60 flex-col items-center justify-center text-center">
         <div
           className={cn(
             'relative flex h-24 w-24 items-center justify-center rounded-full border border-indigo-400/30 bg-indigo-500/10',

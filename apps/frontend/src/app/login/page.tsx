@@ -12,6 +12,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { useAuth } from '../../features/auth/use-auth';
 import { getApiUrl } from '../../lib/api-client';
+import { isOnboardingCompleted } from '../../lib/auth-token';
 import { getErrorMessage } from '../../lib/utils';
 
 export default function LoginPage() {
@@ -24,7 +25,8 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && user) router.replace('/onboarding');
+    if (!isLoading && user)
+      router.replace(isOnboardingCompleted() ? '/dashboard' : '/onboarding');
   }, [isLoading, router, user]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
