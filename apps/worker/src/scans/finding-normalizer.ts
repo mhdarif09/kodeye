@@ -37,7 +37,13 @@ export function normalizeScannerOutput(
   storeCodeEvidence = false,
 ): NormalizedFinding[] {
   let findings: NormalizedFinding[];
-  if (scanner === 'semgrep') {
+  if (scanner === 'code-quality') {
+    findings = arrayValue(recordValue(output).results).map((item) =>
+      normalizeCodeQualityFinding(recordValue(item)),
+    );
+  } else if (scanner === 'codeql') {
+    findings = normalizeCodeQlOutput(output);
+  } else if (scanner === 'semgrep') {
     findings = arrayValue(recordValue(output).results).map((item) =>
       normalizeSemgrepFinding(recordValue(item), storeCodeEvidence),
     );
@@ -49,6 +55,109 @@ export function normalizeScannerOutput(
     findings = normalizeTrivyOutput(output);
   }
   return findings.map(classifyBugBountyFinding).map(clampFinding);
+}
+
+function normalizeCodeQlOutput(output: unknown): NormalizedFinding[] {
+  const findings: NormalizedFinding[] = [];
+  for (const runValue of arrayValue(recordValue(output).runs)) {
+    const run = recordValue(runValue);
+    const driver = recordValue(recordValue(run.tool).driver);
+    const rules = new Map<string, Record<string, unknown>>();
+    for (const ruleValue of arrayValue(driver.rules)) {
+      const rule = recordValue(ruleValue);
+      const id = text(rule.id);
+      if (id) rules.set(id, rule);
+    }
+    for (const resultValue of arrayValue(run.results)) {
+      const result = recordValue(resultValue);
+      const ruleId = text(result.ruleId);
+      const rule = ruleId ? rules.get(ruleId) : undefined;
+      findings.push(normalizeCodeQlFinding(result, rule));
+    }
+  }
+  return findings;
+}
+
+function normalizeCodeQlFinding(
+  result: Record<string, unknown>,
+  rule?: Record<string, unknown>,
+): NormalizedFinding {
+  const location = recordValue(arrayValue(result.locations)[0]);
+  const physicalLocation = recordValue(location.physicalLocation);
+  const region = recordValue(physicalLocation.region);
+  const artifact = recordValue(physicalLocation.artifactLocation);
+  const properties = recordValue(rule?.properties);
+  const tags = arrayText(properties.tags);
+  const precision = text(properties.precision);
+  const securitySeverity = Number(text(properties.securitySeverity));
+  const ruleId = text(result.ruleId) ?? text(rule?.id);
+  const message =
+    text(recordValue(result.message).text) ??
+    text(recordValue(rule?.fullDescription).text) ??
+    text(recordValue(rule?.shortDescription).text);
+  const cwe = tags
+    ?.match(/external\/cwe\/cwe-\d+/i)?.[0]
+    ?.replace(/external\/cwe\/cwe-/i, 'CWE-');
+  return {
+    category: inferCategory(ruleId) ?? 'CodeQL',
+    confidence: codeQlConfidence(precision),
+    cwe,
+    description: truncate(message),
+    filePath: text(artifact.uri),
+    impact: codeQlImpact(securitySeverity, tags),
+    lineEnd: numberValue(region.endLine),
+    lineStart: numberValue(region.startLine),
+    owasp: inferOwasp(cwe),
+    rawJson: {
+      precision: precision ?? '',
+      ruleId: ruleId ?? '',
+      securitySeverity: Number.isFinite(securitySeverity)
+        ? String(securitySeverity)
+        : '',
+      tags: tags ?? '',
+    },
+    recommendation:
+      text(recordValue(rule?.help).text) ??
+      'Review the CodeQL alert path, apply the recommended secure coding pattern, and add regression coverage.',
+    scanner: 'codeql',
+    severity: codeQlSeverity(securitySeverity, text(result.level)),
+    status: FindingStatus.OPEN,
+    title:
+      text(recordValue(rule?.shortDescription).text) ??
+      message ??
+      ruleId ??
+      'CodeQL finding',
+  };
+}
+
+function normalizeCodeQualityFinding(
+  raw: Record<string, unknown>,
+): NormalizedFinding {
+  const severity = text(raw.severity);
+  const confidence = text(raw.confidence);
+  return {
+    category: text(raw.category) ?? 'Code Quality',
+    confidence: codeQualityConfidence(confidence),
+    description: truncate(text(raw.description)),
+    evidenceMasked: safeCodeEvidence(text(raw.evidence)),
+    filePath: text(raw.path),
+    impact:
+      'Quality issues increase maintenance cost, review risk, and the chance of security fixes being applied inconsistently.',
+    lineEnd: numberValue(raw.lineEnd),
+    lineStart: numberValue(raw.lineStart),
+    rawJson: {
+      category: text(raw.category) ?? '',
+      confidence: confidence ?? 'UNKNOWN',
+      severity: severity ?? 'UNKNOWN',
+    },
+    recommendation:
+      text(raw.recommendation) ??
+      'Refactor the highlighted code and add focused tests for the changed behavior.',
+    scanner: 'code-quality',
+    severity: codeQualitySeverity(severity),
+    status: FindingStatus.OPEN,
+    title: text(raw.title) ?? 'Code quality issue',
+  };
 }
 
 function normalizeGitleaksFinding(
@@ -91,9 +200,23 @@ function normalizeSemgrepFinding(
   const severity = text(extra.severity);
   const message = text(extra.message);
   const cwe = metadataText(metadata.cwe);
+  const checkId = text(raw.check_id);
+  const references = metadataText(metadata.references);
+  const category =
+    metadataText(metadata.category) ??
+    metadataText(metadata.technology) ??
+    metadataText(metadata.subcategory) ??
+    inferCategory(checkId) ??
+    'SAST';
+  const recommendation =
+    text(extra.fix) ??
+    metadataText(metadata.fix) ??
+    metadataText(metadata.recommendation) ??
+    metadataText(metadata.remediation) ??
+    defaultSemgrepRecommendation(category);
   return {
-    category: metadataText(metadata.category) ?? 'SAST',
-    confidence: FindingConfidence.UNKNOWN,
+    category,
+    confidence: semgrepConfidence(metadataText(metadata.confidence)),
     cwe,
     description: message,
     evidenceMasked: storeCodeEvidence
@@ -102,15 +225,18 @@ function normalizeSemgrepFinding(
     filePath: text(raw.path),
     lineEnd: numberValue(recordValue(raw.end).line),
     lineStart: numberValue(recordValue(raw.start).line),
-    impact: metadataText(metadata.impact),
+    impact:
+      metadataText(metadata.impact) ??
+      metadataText(metadata.likelihood) ??
+      defaultSemgrepImpact(category),
     owasp: metadataText(metadata.owasp) ?? inferOwasp(cwe),
     rawJson: {
-      check_id: text(raw.check_id) ?? '',
+      check_id: checkId ?? '',
       path: text(raw.path) ?? '',
+      references: references ?? '',
       severity: severity ?? 'UNKNOWN',
     },
-    recommendation:
-      metadataText(metadata.fix) ?? metadataText(metadata.recommendation),
+    recommendation,
     scanner: 'semgrep',
     severity: semgrepSeverity(severity),
     status: FindingStatus.OPEN,
@@ -246,6 +372,63 @@ function semgrepSeverity(value?: string): FindingSeverity {
   return FindingSeverity.UNKNOWN;
 }
 
+function codeQualitySeverity(value?: string): FindingSeverity {
+  const normalized = value?.toUpperCase();
+  if (normalized === 'HIGH') return FindingSeverity.HIGH;
+  if (normalized === 'MEDIUM') return FindingSeverity.MEDIUM;
+  if (normalized === 'LOW') return FindingSeverity.LOW;
+  if (normalized === 'INFO') return FindingSeverity.INFO;
+  return FindingSeverity.UNKNOWN;
+}
+
+function codeQlSeverity(
+  securitySeverity: number,
+  level?: string,
+): FindingSeverity {
+  if (Number.isFinite(securitySeverity)) {
+    if (securitySeverity >= 8) return FindingSeverity.HIGH;
+    if (securitySeverity >= 5) return FindingSeverity.MEDIUM;
+    if (securitySeverity > 0) return FindingSeverity.LOW;
+  }
+  if (level === 'error') return FindingSeverity.HIGH;
+  if (level === 'warning') return FindingSeverity.MEDIUM;
+  if (level === 'note') return FindingSeverity.INFO;
+  return FindingSeverity.UNKNOWN;
+}
+
+function codeQlConfidence(value?: string): FindingConfidence {
+  if (value === 'very-high' || value === 'high') return FindingConfidence.HIGH;
+  if (value === 'medium') return FindingConfidence.MEDIUM;
+  if (value === 'low') return FindingConfidence.LOW;
+  return FindingConfidence.UNKNOWN;
+}
+
+function codeQlImpact(securitySeverity: number, tags?: string): string {
+  if (tags?.toLowerCase().includes('security')) {
+    return 'CodeQL identified a semantic security flow or pattern that may be exploitable when reachable.';
+  }
+  if (Number.isFinite(securitySeverity) && securitySeverity >= 5) {
+    return 'CodeQL assigned this alert elevated security severity based on query metadata.';
+  }
+  return 'CodeQL identified a code path that should be reviewed for correctness, maintainability, or security impact.';
+}
+
+function codeQualityConfidence(value?: string): FindingConfidence {
+  const normalized = value?.toUpperCase();
+  if (normalized === 'HIGH') return FindingConfidence.HIGH;
+  if (normalized === 'MEDIUM') return FindingConfidence.MEDIUM;
+  if (normalized === 'LOW') return FindingConfidence.LOW;
+  return FindingConfidence.UNKNOWN;
+}
+
+function semgrepConfidence(value?: string): FindingConfidence {
+  const normalized = value?.toUpperCase();
+  if (normalized === 'HIGH') return FindingConfidence.HIGH;
+  if (normalized === 'MEDIUM') return FindingConfidence.MEDIUM;
+  if (normalized === 'LOW') return FindingConfidence.LOW;
+  return FindingConfidence.UNKNOWN;
+}
+
 function trivySeverity(value?: string): FindingSeverity {
   return Object.values(FindingSeverity).includes(value as FindingSeverity)
     ? (value as FindingSeverity)
@@ -274,6 +457,64 @@ function arrayText(value: unknown): string | undefined {
   return Array.isArray(value)
     ? value.map(String).join(', ').slice(0, 100)
     : undefined;
+}
+
+function inferCategory(checkId?: string): string | undefined {
+  if (!checkId) return undefined;
+  const normalized = checkId.toLowerCase();
+  if (normalized.includes('xss')) return 'Cross-Site Scripting';
+  if (normalized.includes('sqli') || normalized.includes('sql-injection')) {
+    return 'SQL Injection';
+  }
+  if (
+    normalized.includes('command-injection') ||
+    normalized.includes('exec') ||
+    normalized.includes('shell')
+  ) {
+    return 'Command Injection';
+  }
+  if (normalized.includes('ssrf')) return 'Server-Side Request Forgery';
+  if (normalized.includes('path-traversal')) return 'Path Traversal';
+  if (normalized.includes('jwt')) return 'Authentication';
+  if (normalized.includes('csrf')) return 'Cross-Site Request Forgery';
+  if (normalized.includes('secret') || normalized.includes('credential')) {
+    return 'Secret Handling';
+  }
+  return undefined;
+}
+
+function defaultSemgrepImpact(category: string): string {
+  const normalized = category.toLowerCase();
+  if (normalized.includes('injection')) {
+    return 'Unsafe input reaching an interpreter can allow attackers to execute unintended queries or commands.';
+  }
+  if (normalized.includes('secret')) {
+    return 'Weak secret handling can expose credentials or tokens to unauthorized users.';
+  }
+  if (normalized.includes('authentication')) {
+    return 'Authentication weaknesses can let attackers bypass identity checks or impersonate users.';
+  }
+  if (normalized.includes('scripting')) {
+    return 'Untrusted content rendered in a browser can execute attacker-controlled JavaScript.';
+  }
+  return 'The matched code pattern may introduce an exploitable security weakness if reachable in production.';
+}
+
+function defaultSemgrepRecommendation(category: string): string {
+  const normalized = category.toLowerCase();
+  if (normalized.includes('injection')) {
+    return 'Use parameterized APIs or safe framework helpers, validate inputs, and avoid building interpreter commands with string concatenation.';
+  }
+  if (normalized.includes('secret')) {
+    return 'Move secrets to a dedicated secret manager or environment variable, rotate exposed values, and avoid committing credentials.';
+  }
+  if (normalized.includes('authentication')) {
+    return 'Use vetted authentication middleware, enforce secure defaults, and add tests for bypass and replay scenarios.';
+  }
+  if (normalized.includes('scripting')) {
+    return 'Escape or sanitize untrusted output using framework-native APIs and avoid rendering raw HTML.';
+  }
+  return 'Review the highlighted code, apply the framework-recommended secure pattern, and add regression tests for the risky path.';
 }
 
 function inferOwasp(cwe?: string): string | undefined {

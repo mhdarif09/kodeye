@@ -13,9 +13,16 @@ const workerSettingKeys = [
   'SCAN_WORKER_MAX_CONCURRENCY',
   'SCAN_WORKER_TEMP_DIR',
   'SCANNER_EXECUTION_MODE',
+  'SCANNER_CODEQL_BIN',
+  'SCANNER_CODEQL_LANGUAGES',
+  'SCANNER_CODEQL_QUERIES',
   'SCANNER_SEMGREP_BIN',
   'SCANNER_SEMGREP_CONFIGS',
   'SCANNER_SEMGREP_INCLUDE_IGNORED',
+  'SCANNER_SEMGREP_JOBS',
+  'SCANNER_SEMGREP_MAX_TARGET_BYTES',
+  'SCANNER_SEMGREP_PRO',
+  'SCANNER_SEMGREP_TIMEOUT_SECONDS',
   'SCANNER_GITLEAKS_BIN',
   'SCANNER_TRIVY_BIN',
   'SCANNER_TRIVY_SCANNERS',
@@ -60,6 +67,15 @@ export async function applyDashboardSettings(
   }
   return {
     ...environment,
+    codeqlBin: values.get('SCANNER_CODEQL_BIN') ?? environment.codeqlBin,
+    codeqlLanguages: listValue(
+      values.get('SCANNER_CODEQL_LANGUAGES'),
+      environment.codeqlLanguages,
+    ),
+    codeqlQueries: listValue(
+      values.get('SCANNER_CODEQL_QUERIES'),
+      environment.codeqlQueries,
+    ),
     gitleaksBin: values.get('SCANNER_GITLEAKS_BIN') ?? environment.gitleaksBin,
     githubAppId: values.get('GITHUB_APP_ID') ?? environment.githubAppId,
     githubAppPrivateKeyPath:
@@ -102,6 +118,22 @@ export async function applyDashboardSettings(
     semgrepIncludeIgnored: booleanValue(
       values.get('SCANNER_SEMGREP_INCLUDE_IGNORED'),
       environment.semgrepIncludeIgnored,
+    ),
+    semgrepJobs: positiveNumber(
+      values.get('SCANNER_SEMGREP_JOBS'),
+      environment.semgrepJobs,
+    ),
+    semgrepMaxTargetBytes: positiveNumber(
+      values.get('SCANNER_SEMGREP_MAX_TARGET_BYTES'),
+      environment.semgrepMaxTargetBytes,
+    ),
+    semgrepPro: booleanValue(
+      values.get('SCANNER_SEMGREP_PRO'),
+      environment.semgrepPro,
+    ),
+    semgrepTimeoutSeconds: positiveNumber(
+      values.get('SCANNER_SEMGREP_TIMEOUT_SECONDS'),
+      environment.semgrepTimeoutSeconds,
     ),
     tempDir: values.get('SCAN_WORKER_TEMP_DIR') ?? environment.tempDir,
     trivyBin: values.get('SCANNER_TRIVY_BIN') ?? environment.trivyBin,

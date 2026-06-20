@@ -181,6 +181,8 @@ function riskLevel(
 
 function scannerSummary(logs: ScanLog[], findings: ReportFinding[]) {
   const coverage: Record<string, string> = {
+    codeql: 'Semantic code analysis and security query layer',
+    'code-quality': 'File-by-file maintainability and code quality review',
     gitleaks: 'Secret leak detection',
     semgrep: 'SAST and source code pattern analysis',
     trivy: 'Dependency vulnerability and misconfiguration analysis',

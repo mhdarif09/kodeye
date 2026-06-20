@@ -8,9 +8,16 @@ export interface WorkerEnvironment {
   scannerExecutionMode: ScannerExecutionMode;
   scannerTimeoutMs: number;
   storeCodeEvidence: boolean;
+  codeqlBin: string;
+  codeqlLanguages: string[];
+  codeqlQueries: string[];
   semgrepBin: string;
   semgrepConfigs: string[];
   semgrepIncludeIgnored: boolean;
+  semgrepJobs: number;
+  semgrepMaxTargetBytes: number;
+  semgrepPro: boolean;
+  semgrepTimeoutSeconds: number;
   gitleaksBin: string;
   trivyBin: string;
   trivyScanners: string[];
@@ -36,6 +43,16 @@ function listValue(name: string, fallback: string[]): string[] {
 export function loadWorkerEnvironment(): WorkerEnvironment {
   const mode = process.env.SCANNER_EXECUTION_MODE ?? 'disabled';
   return {
+    codeqlBin: process.env.SCANNER_CODEQL_BIN ?? 'codeql',
+    codeqlLanguages: listValue('SCANNER_CODEQL_LANGUAGES', [
+      'javascript-typescript',
+      'python',
+      'go',
+      'java-kotlin',
+      'csharp',
+      'ruby',
+    ]),
+    codeqlQueries: listValue('SCANNER_CODEQL_QUERIES', []),
     gitleaksBin: process.env.SCANNER_GITLEAKS_BIN ?? 'gitleaks',
     githubAppId: process.env.GITHUB_APP_ID,
     githubAppPrivateKeyPath: process.env.GITHUB_APP_PRIVATE_KEY_PATH,
@@ -51,11 +68,21 @@ export function loadWorkerEnvironment(): WorkerEnvironment {
     storeCodeEvidence: process.env.SCANNER_STORE_CODE_EVIDENCE === 'true',
     semgrepBin: process.env.SCANNER_SEMGREP_BIN ?? 'semgrep',
     semgrepConfigs: listValue('SCANNER_SEMGREP_CONFIGS', [
+      'p/default',
       'p/security-audit',
       'p/owasp-top-ten',
+      'p/cwe-top-25',
+      'p/secrets',
     ]),
     semgrepIncludeIgnored:
       process.env.SCANNER_SEMGREP_INCLUDE_IGNORED !== 'false',
+    semgrepJobs: numberValue('SCANNER_SEMGREP_JOBS', 4),
+    semgrepMaxTargetBytes: numberValue(
+      'SCANNER_SEMGREP_MAX_TARGET_BYTES',
+      1_000_000,
+    ),
+    semgrepPro: process.env.SCANNER_SEMGREP_PRO === 'true',
+    semgrepTimeoutSeconds: numberValue('SCANNER_SEMGREP_TIMEOUT_SECONDS', 60),
     tempDir: process.env.SCAN_WORKER_TEMP_DIR ?? './tmp/scans',
     trivyBin: process.env.SCANNER_TRIVY_BIN ?? 'trivy',
     trivyScanners: listValue('SCANNER_TRIVY_SCANNERS', [

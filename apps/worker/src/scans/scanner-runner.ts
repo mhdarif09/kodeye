@@ -4,8 +4,37 @@ import { safeChildPath } from '../common/filesystem';
 import { processCommand } from '../common/process-command';
 import { readJsonFile } from '../common/safe-json';
 import type { WorkerEnvironment } from '../config/env';
+import { runCodeQualityScanner } from './code-quality-scanner';
+import { runCodeQlScanner } from './codeql-scanner';
 
-export type ScannerName = 'semgrep' | 'gitleaks' | 'trivy';
+export type ScannerName =
+  | 'code-quality'
+  | 'codeql'
+  | 'semgrep'
+  | 'gitleaks'
+  | 'trivy';
+
+const SEMGREP_EXCLUDES = [
+  '.git',
+  '.hg',
+  '.svn',
+  '.kodeye-results',
+  '.next',
+  '.nuxt',
+  '.turbo',
+  'coverage',
+  'dist',
+  'build',
+  'out',
+  'node_modules',
+  'vendor',
+  'venv',
+  '.venv',
+  '__pycache__',
+  'target',
+  'bin',
+  'obj',
+];
 
 export interface ScannerRun {
   name: ScannerName;
@@ -19,6 +48,45 @@ export async function runScanner(
   repositoryPath: string,
   environment: WorkerEnvironment,
 ): Promise<ScannerRun> {
+  if (name === 'code-quality') {
+    try {
+      return {
+        name,
+        output: await runCodeQualityScanner(repositoryPath),
+        success: true,
+      };
+    } catch (error) {
+      return {
+        name,
+        output: null,
+        success: false,
+        warning:
+          error instanceof Error
+            ? error.message
+            : 'code quality scanner failed',
+      };
+    }
+  }
+  if (name === 'codeql') {
+    try {
+      const output = await runCodeQlScanner(repositoryPath, environment);
+      return {
+        name,
+        output,
+        success: true,
+        ...(Array.isArray(output.warnings) && output.warnings.length
+          ? { warning: output.warnings.slice(0, 3).join('; ') }
+          : {}),
+      };
+    } catch (error) {
+      return {
+        name,
+        output: null,
+        success: false,
+        warning: error instanceof Error ? error.message : 'codeql failed',
+      };
+    }
+  }
   const outputDirectory = safeChildPath(repositoryPath, '.kodeye-results');
   await mkdir(outputDirectory, { recursive: true });
   const outputPath = safeChildPath(outputDirectory, `${name}.json`);
@@ -69,7 +137,17 @@ function scannerDefinition(
       args: [
         'scan',
         ...environment.semgrepConfigs.flatMap((config) => ['--config', config]),
+        ...SEMGREP_EXCLUDES.flatMap((pattern) => ['--exclude', pattern]),
         ...(environment.semgrepIncludeIgnored ? ['--no-git-ignore'] : []),
+        ...(environment.semgrepPro ? ['--pro'] : []),
+        '--jobs',
+        String(environment.semgrepJobs),
+        '--max-target-bytes',
+        String(environment.semgrepMaxTargetBytes),
+        '--metrics',
+        'off',
+        '--timeout',
+        String(environment.semgrepTimeoutSeconds),
         '--json',
         '--output',
         outputPath,

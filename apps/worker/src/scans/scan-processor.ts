@@ -132,7 +132,13 @@ export class ScanProcessor {
 
       const allFindings: NormalizedFinding[] = [];
       let successfulScanners = 0;
-      for (const scanner of ['semgrep', 'gitleaks', 'trivy'] as ScannerName[]) {
+      for (const scanner of [
+        'code-quality',
+        'semgrep',
+        'codeql',
+        'gitleaks',
+        'trivy',
+      ] as ScannerName[]) {
         await this.log(scan.id, 'info', `${scanner} started`);
         const result = await runScanner(
           scanner,

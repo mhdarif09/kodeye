@@ -216,17 +216,17 @@ The user explicitly requested a one-time fix proposal and allowed the complete t
   private findingContext(finding: FindingDetail) {
     return [
       'Sanitized security finding:',
-      `Title: ${finding.title}`,
+      `Title: ${redactSecrets(finding.title)}`,
       `Category: ${finding.category}`,
       `Severity: ${finding.severity}`,
       `Scanner confidence: ${finding.confidence}`,
       `Scanner: ${finding.scanner}`,
-      `CWE: ${finding.cwe ?? 'not provided'}`,
-      `OWASP: ${finding.owasp ?? 'not provided'}`,
-      `Location: ${finding.filePath ?? 'not provided'}${finding.lineStart ? `:${finding.lineStart}${finding.lineEnd ? `-${finding.lineEnd}` : ''}` : ''}`,
-      `Description: ${finding.description ?? 'not provided'}`,
-      `Impact: ${finding.impact ?? 'not provided'}`,
-      `Existing recommendation: ${finding.recommendation ?? 'not provided'}`,
+      `CWE: ${redactSecrets(finding.cwe ?? 'not provided')}`,
+      `OWASP: ${redactSecrets(finding.owasp ?? 'not provided')}`,
+      `Location: ${redactSecrets(finding.filePath ?? 'not provided')}${finding.lineStart ? `:${finding.lineStart}${finding.lineEnd ? `-${finding.lineEnd}` : ''}` : ''}`,
+      `Description: ${redactSecrets(finding.description ?? 'not provided')}`,
+      `Impact: ${redactSecrets(finding.impact ?? 'not provided')}`,
+      `Existing recommendation: ${redactSecrets(finding.recommendation ?? 'not provided')}`,
       'No secret evidence is included.',
     ].join('\n');
   }
@@ -272,6 +272,7 @@ The user explicitly requested a one-time fix proposal and allowed the complete t
     sourceSha: string,
     proposal: {
       commitMessage: string;
+      patch: string;
       proposedContent: string;
       title: string;
     },
@@ -293,6 +294,7 @@ The user explicitly requested a one-time fix proposal and allowed the complete t
     sourceSha: string,
     proposal: {
       commitMessage: string;
+      patch: string;
       proposedContent: string;
       title: string;
     },
@@ -384,12 +386,14 @@ function hash(value: string) {
 
 function proposalHash(proposal: {
   commitMessage: string;
+  patch: string;
   proposedContent: string;
   title: string;
 }) {
   return hash(
     JSON.stringify({
       commitMessage: proposal.commitMessage,
+      patch: proposal.patch,
       proposedContent: proposal.proposedContent,
       title: proposal.title,
     }),
@@ -403,4 +407,23 @@ function safeEqual(left: string, right: string) {
     leftBuffer.length === rightBuffer.length &&
     timingSafeEqual(leftBuffer, rightBuffer)
   );
+}
+
+function redactSecrets(value: string): string {
+  return value
+    .replace(
+      /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g,
+      '[REDACTED_PRIVATE_KEY]',
+    )
+    .replace(/\bAKIA[0-9A-Z]{16}\b/g, '[REDACTED_AWS_KEY]')
+    .replace(/\bgh[pousr]_[A-Za-z0-9_]{20,}\b/g, '[REDACTED_GITHUB_TOKEN]')
+    .replace(/\bxox[baprs]-[A-Za-z0-9-]{20,}\b/g, '[REDACTED_SLACK_TOKEN]')
+    .replace(
+      /\b(authorization\s*:\s*bearer\s+)[A-Za-z0-9._~+/=-]{12,}/gi,
+      '$1[REDACTED_TOKEN]',
+    )
+    .replace(
+      /\b(password|secret|token|api[_-]?key)\s*[:=]\s*(['"]?)[^'"\s]{8,}\2/gi,
+      '$1=[REDACTED_SECRET]',
+    );
 }

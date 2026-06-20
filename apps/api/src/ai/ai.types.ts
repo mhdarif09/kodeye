@@ -10,9 +10,15 @@ export interface AiFindingReview {
 export interface AiFixProposal {
   approvalToken: string;
   commitMessage: string;
+  explanation: string;
   originalContent: string;
+  patch: string;
   proposedContent: string;
+  risk: 'critical' | 'high' | 'medium' | 'low';
+  rootCause: string;
+  sideEffects: string[];
   sourceSha: string;
   summary: string;
+  tests: string[];
   title: string;
 }

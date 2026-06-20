@@ -1,4 +1,5 @@
 ARG GITLEAKS_VERSION=8.24.3
+ARG CODEQL_VERSION=2.20.3
 ARG TRIVY_VERSION=0.58.2
 
 FROM aquasec/trivy:${TRIVY_VERSION} AS trivy
@@ -6,9 +7,10 @@ FROM aquasec/trivy:${TRIVY_VERSION} AS trivy
 FROM node:20-bookworm-slim
 
 ARG GITLEAKS_VERSION
+ARG CODEQL_VERSION
 
 ENV PNPM_HOME="/pnpm"
-ENV PATH="/pnpm:/opt/semgrep/bin:${PATH}"
+ENV PATH="/pnpm:/opt/semgrep/bin:/opt/codeql:${PATH}"
 
 COPY --from=trivy /usr/local/bin/trivy /usr/local/bin/trivy
 
@@ -18,10 +20,13 @@ RUN apt-get update \
     && /opt/semgrep/bin/pip install --no-cache-dir semgrep \
     && curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -o /tmp/gitleaks.tar.gz \
     && tar -xzf /tmp/gitleaks.tar.gz -C /usr/local/bin gitleaks \
-    && rm -rf /var/lib/apt/lists/* /tmp/*.tar.gz \
+    && curl -fsSL "https://github.com/github/codeql-cli-binaries/releases/download/v${CODEQL_VERSION}/codeql-linux64.zip" -o /tmp/codeql.zip \
+    && unzip -q /tmp/codeql.zip -d /opt \
+    && rm -rf /var/lib/apt/lists/* /tmp/*.tar.gz /tmp/*.zip \
     && corepack enable \
     && corepack prepare pnpm@9.15.9 --activate \
     && semgrep --version \
+    && codeql version \
     && gitleaks version \
     && trivy --version \
     && git --version

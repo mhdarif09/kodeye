@@ -78,7 +78,8 @@ job, lihat worker logs, dan konfirmasi scan selesai.
 
 ## 8. Report/Invoice
 
-Gunakan `REPORT_STORAGE_DIR=/app/storage/reports`, `REPORT_ENABLE_PDF=true`,
+Gunakan `REPORT_STORAGE_DIR=/app/storage/reports`,
+`WORKSPACE_STORAGE_DIR=/app/storage/workspaces`, `REPORT_ENABLE_PDF=true`,
 `INVOICE_STORAGE_DIR=/app/storage/invoices`, dan `INVOICE_PDF_ENABLED=true`.
 Download report PDF dan invoice PDF sebagai tes akhir.
 

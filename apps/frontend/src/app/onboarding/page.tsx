@@ -25,7 +25,6 @@ import { Alert } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Select } from '../../components/ui/select';
-import { Spinner } from '../../components/ui/spinner';
 import { githubApi } from '../../features/github/api';
 import type {
   GitHubInstallation,
@@ -97,12 +96,13 @@ function OnboardingContent() {
   const loadData = useCallback(async () => {
     setError('');
     try {
-      let [organizationItems, installationItems, repositoryItems] =
+      const [loadedOrganizationItems, installationItems, repositoryItems] =
         await Promise.all([
           organizationsApi.list(),
           githubApi.installations(),
           githubApi.repositories(),
         ]);
+      let organizationItems = loadedOrganizationItems;
       if (organizationItems.length === 0) {
         const created = await organizationsApi.create('My Organization');
         organizationItems = [created];
@@ -202,13 +202,7 @@ function OnboardingContent() {
   useEffect(() => {
     if (isAuthLoading || isLoading || !user) return;
     if (onboardingDone) router.replace('/dashboard');
-  }, [
-    isAuthLoading,
-    isLoading,
-    onboardingDone,
-    router,
-    user,
-  ]);
+  }, [isAuthLoading, isLoading, onboardingDone, router, user]);
 
   async function connectGitHubApp() {
     if (!organizationId) return;
@@ -448,10 +442,7 @@ function OnboardingContent() {
                     ZIP/folder upload will be handled as a separate artifact
                     scanning flow.
                   </p>
-                  <Button
-                    className="mt-5"
-                    onClick={continueToManualRepository}
-                  >
+                  <Button className="mt-5" onClick={continueToManualRepository}>
                     Add repository manually
                   </Button>
                 </div>
@@ -467,10 +458,7 @@ function OnboardingContent() {
                     engineering consulting, start from the services page and
                     connect GitHub later when a repository is ready.
                   </p>
-                  <Button
-                    className="mt-5"
-                    onClick={continueToServices}
-                  >
+                  <Button className="mt-5" onClick={continueToServices}>
                     Explore services
                   </Button>
                 </div>

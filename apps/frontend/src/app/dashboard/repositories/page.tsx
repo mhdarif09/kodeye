@@ -47,10 +47,11 @@ export default function RepositoriesPage() {
   const loadData = useCallback(async () => {
     setError('');
     try {
-      let [repositoryItems, organizationItems] = await Promise.all([
+      const [repositoryItems, loadedOrganizationItems] = await Promise.all([
         repositoriesApi.list(),
         organizationsApi.list(),
       ]);
+      let organizationItems = loadedOrganizationItems;
       if (organizationItems.length === 0) {
         const created = await organizationsApi.create('My Organization');
         organizationItems = [created];
@@ -422,7 +423,10 @@ export default function RepositoriesPage() {
             <Button onClick={() => setIsModalOpen(false)} variant="secondary">
               Cancel
             </Button>
-            <Button disabled={isSubmitting || manualMode === 'upload'} type="submit">
+            <Button
+              disabled={isSubmitting || manualMode === 'upload'}
+              type="submit"
+            >
               {isSubmitting ? 'Adding...' : 'Add repository'}
             </Button>
           </div>

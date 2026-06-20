@@ -3,18 +3,16 @@ import {
   Bot,
   CheckCircle2,
   ChevronRight,
-  Code2,
   CreditCard,
   FileSearch,
-  Github,
   MessageSquareCode,
   ShieldCheck,
   Sparkles,
-  Workflow,
 } from 'lucide-react';
 import Link from 'next/link';
 
 import { MarketingNav } from '../components/marketing-nav';
+import { services } from './services/service-data';
 
 const stats = [
   {
@@ -82,44 +80,58 @@ const pricingPlans = [
   {
     cta: 'Start free',
     description:
-      'For founders and small teams validating their first audit workflow.',
+      'For founders and small teams trying the audit workflow before scaling.',
     features: [
-      '1 organization',
-      'Manual repository audit',
-      'Basic scan history',
-      'HTML reports',
+      '1 repository',
+      '5 scans/month',
+      'HTML/JSON reports',
+      'Manual scans',
     ],
     href: '/register',
-    name: 'Starter',
+    name: 'Free',
     price: 'Free',
   },
   {
-    cta: 'Choose Growth',
+    cta: 'Choose Pro',
     description:
-      'For product teams that need recurring GitHub-connected audit visibility.',
+      'For solo builders and focused teams that need GitHub-connected audits.',
     features: [
-      'GitHub App install',
-      'Repository sync',
-      'Monthly scan allowance',
+      '10 repositories',
+      '100 scans/month',
       'PDF reports',
+      'GitHub auto scan',
+    ],
+    href: '/dashboard/billing',
+    name: 'Pro Monthly',
+    price: 'Rp99.000',
+  },
+  {
+    cta: 'Choose Team',
+    description:
+      'For product teams that need broader repository coverage and scan volume.',
+    features: [
+      '50 repositories',
+      '500 scans/month',
+      'PDF reports',
+      'GitHub auto scan',
     ],
     highlighted: true,
-    href: '/pricing',
-    name: 'Growth',
-    price: 'From IDR 299k',
+    href: '/dashboard/billing',
+    name: 'Team Monthly',
+    price: 'Rp299.000',
   },
   {
     cta: 'Contact sales team',
     description:
       'For teams that want audit platform access plus engineering and automation delivery.',
     features: [
-      'Custom audit scope',
-      'AI automation roadmap',
-      'DevOps support',
-      'Dedicated delivery plan',
+      'Up to 1000 repositories',
+      '10000 scans/month',
+      'PDF reports',
+      'Manual approval',
     ],
     href: '/contact-sales',
-    name: 'Enterprise',
+    name: 'Enterprise Custom',
     price: 'Custom',
   },
 ];
@@ -359,6 +371,53 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section
+        className="border-y border-slate-200 bg-white py-16 sm:py-20"
+        id="services"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-widest text-brand-600">
+                Services
+              </p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-5xl">
+                Get the hands-on team behind the platform.
+              </h2>
+            </div>
+            <p className="max-w-3xl text-sm leading-6 text-slate-600 lg:justify-self-end">
+              Kodeye is not only a scanner. We can help teams design AI
+              automation, make engineering decisions, stabilize infrastructure,
+              and ship websites or business systems that are ready to operate.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {services.map(({ description, href, icon: Icon, title }) => (
+              <Link
+                className="group flex min-h-[19rem] flex-col rounded-xl border border-slate-200 bg-slate-50 p-5 transition hover:-translate-y-1 hover:border-slate-300 hover:bg-white hover:shadow-xl hover:shadow-slate-200"
+                href={href}
+                key={href}
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-slate-950 text-white">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="mt-5 text-lg font-bold text-slate-950">
+                  {title}
+                </h3>
+                <p className="mt-3 line-clamp-5 text-sm leading-6 text-slate-600">
+                  {description}
+                </p>
+                <span className="mt-auto inline-flex items-center gap-2 pt-6 text-sm font-bold text-brand-700">
+                  View service{' '}
+                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="bg-white py-16 sm:py-20" id="customers">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
@@ -460,7 +519,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="mt-10 grid gap-4 lg:grid-cols-3">
+          <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {pricingPlans.map((plan) => (
               <div
                 className={
@@ -707,10 +766,7 @@ function Footer() {
             <Link className="hover:text-white" href="/pricing">
               Pricing
             </Link>
-            <Link
-              className="hover:text-white"
-              href="/contact-sales"
-            >
+            <Link className="hover:text-white" href="/contact-sales">
               Contact sales
             </Link>
             <Link className="hover:text-white" href="/login">

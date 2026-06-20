@@ -41,6 +41,7 @@ dari halaman ini.
 | `SCANNER_TIMEOUT_MS`             | Scanner      | No      | Capacity policy      | `300000`                                         | Scanner             | Command timeout         | Slow scan         |
 | `REPORT_STORAGE_DIR`             | Report       | No      | Docker volume path   | `/app/storage/reports`                           | Report              | Report storage          | Download report   |
 | `REPORT_ENABLE_PDF`              | Report       | No      | Product policy       | `true`                                           | Report              | PDF export              | Download PDF      |
+| `WORKSPACE_STORAGE_DIR`          | App URL      | No      | Docker volume path   | `/app/storage/workspaces`                        | App URLs            | Editor workspace files  | Open workspace    |
 | `INVOICE_STORAGE_DIR`            | Invoice      | No      | Docker volume path   | `/app/storage/invoices`                          | Invoice             | Invoice storage         | Download invoice  |
 | `INVOICE_PDF_ENABLED`            | Invoice      | No      | Product policy       | `true`                                           | Invoice             | PDF export              | Download PDF      |
 | `APP_URL`                        | App URL      | No      | Deployment domain    | `https://app.kodeye.net`                         | App URLs            | App links               | Open app          |

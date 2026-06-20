@@ -13,6 +13,11 @@ export class CreateFixPullRequestDto {
 
   @IsString()
   @MinLength(1)
+  @MaxLength(100_000)
+  patch!: string;
+
+  @IsString()
+  @MinLength(1)
   @MaxLength(200_000)
   proposedContent!: string;
 

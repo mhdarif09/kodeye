@@ -102,6 +102,10 @@ class EnvironmentVariables {
 
   @IsOptional()
   @IsString()
+  WORKSPACE_STORAGE_DIR?: string;
+
+  @IsOptional()
+  @IsString()
   REPORT_ENABLE_PDF?: string;
 
   @IsOptional()

@@ -17,6 +17,7 @@ import { SettingsModule } from './settings/settings.module';
 import { AdminModule } from './admin/admin.module';
 import { AiModule } from './ai/ai.module';
 import { SalesModule } from './sales/sales.module';
+import { WorkspacesModule } from './workspaces/workspaces.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { SalesModule } from './sales/sales.module';
     AdminModule,
     AiModule,
     SalesModule,
+    WorkspacesModule,
   ],
 })
 export class AppModule {}

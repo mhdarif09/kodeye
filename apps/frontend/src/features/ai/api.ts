@@ -29,14 +29,27 @@ export const aiApi = {
       AiFixProposal,
       | 'approvalToken'
       | 'commitMessage'
+      | 'patch'
       | 'proposedContent'
       | 'sourceSha'
       | 'title'
     >,
-  ) =>
-    apiClient<AiFixPullRequest>(`/ai/findings/${findingId}/fix/pull-request`, {
-      authenticated: true,
-      body: proposal,
-      method: 'POST',
-    }),
+  ) => {
+    const body = {
+      approvalToken: proposal.approvalToken,
+      commitMessage: proposal.commitMessage,
+      patch: proposal.patch,
+      proposedContent: proposal.proposedContent,
+      sourceSha: proposal.sourceSha,
+      title: proposal.title,
+    };
+    return apiClient<AiFixPullRequest>(
+      `/ai/findings/${findingId}/fix/pull-request`,
+      {
+        authenticated: true,
+        body,
+        method: 'POST',
+      },
+    );
+  },
 };

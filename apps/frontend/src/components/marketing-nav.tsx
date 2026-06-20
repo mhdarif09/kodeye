@@ -9,6 +9,7 @@ import { services } from '../app/services/service-data';
 const navItems = [
   { href: '/#product', label: 'Product' },
   { href: '/#reviews', label: 'AI Reviews' },
+  { href: '/#services', label: 'Services' },
   { href: '/#customers', label: 'Customers' },
   { href: '/#pricing', label: 'Pricing' },
 ];

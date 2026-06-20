@@ -86,6 +86,19 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     },
   ),
   setting(
+    'WORKSPACE_STORAGE_DIR',
+    APP,
+    STRING,
+    'Workspace Storage Dir',
+    'Persistent storage directory for AI editor workspaces.',
+    {
+      defaultValue: './tmp/workspaces',
+      exampleValue: './tmp/workspaces',
+      restartRequired: true,
+      whereToGet: 'Server path or mounted volume for editable workspaces.',
+    },
+  ),
+  setting(
     'PAYMENT_SUCCESS_URL',
     APP,
     STRING,
@@ -451,6 +464,40 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     { defaultValue: 'local-cli', exampleValue: 'local-cli' },
   ),
   setting(
+    'SCANNER_CODEQL_BIN',
+    SCANNER,
+    STRING,
+    'CodeQL Binary',
+    'CodeQL executable.',
+    {
+      defaultValue: 'codeql',
+      exampleValue: 'codeql',
+    },
+  ),
+  setting(
+    'SCANNER_CODEQL_LANGUAGES',
+    SCANNER,
+    STRING,
+    'CodeQL Languages',
+    'Comma-separated CodeQL languages to analyze when matching source files are detected.',
+    {
+      defaultValue: 'javascript-typescript,python,go,java-kotlin,csharp,ruby',
+      exampleValue: 'javascript-typescript,python,go',
+    },
+  ),
+  setting(
+    'SCANNER_CODEQL_QUERIES',
+    SCANNER,
+    STRING,
+    'CodeQL Queries',
+    'Optional comma-separated CodeQL query packs or suites. Leave empty to use each language security-and-quality suite.',
+    {
+      defaultValue: '',
+      exampleValue:
+        'codeql/javascript-queries:codeql-suites/javascript-security-and-quality.qls',
+    },
+  ),
+  setting(
     'SCANNER_SEMGREP_BIN',
     SCANNER,
     STRING,
@@ -468,8 +515,10 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     'Semgrep Rulesets',
     'Comma-separated Semgrep Registry rulesets used for SAST and OWASP analysis.',
     {
-      defaultValue: 'p/security-audit,p/owasp-top-ten',
-      exampleValue: 'p/security-audit,p/owasp-top-ten',
+      defaultValue:
+        'p/default,p/security-audit,p/owasp-top-ten,p/cwe-top-25,p/secrets',
+      exampleValue:
+        'p/default,p/security-audit,p/owasp-top-ten,p/cwe-top-25,p/secrets',
     },
   ),
   setting(
@@ -481,6 +530,50 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     {
       defaultValue: 'true',
       exampleValue: 'true',
+    },
+  ),
+  setting(
+    'SCANNER_SEMGREP_JOBS',
+    SCANNER,
+    NUMBER,
+    'Semgrep Jobs',
+    'Parallel Semgrep jobs for faster scans.',
+    {
+      defaultValue: '4',
+      exampleValue: '4',
+    },
+  ),
+  setting(
+    'SCANNER_SEMGREP_MAX_TARGET_BYTES',
+    SCANNER,
+    NUMBER,
+    'Semgrep Max Target Bytes',
+    'Maximum single file size Semgrep will scan.',
+    {
+      defaultValue: '1000000',
+      exampleValue: '1000000',
+    },
+  ),
+  setting(
+    'SCANNER_SEMGREP_PRO',
+    SCANNER,
+    BOOLEAN,
+    'Semgrep Pro Engine',
+    'Enable Semgrep Pro engine flags when the worker is authenticated with Semgrep.',
+    {
+      defaultValue: 'false',
+      exampleValue: 'false',
+    },
+  ),
+  setting(
+    'SCANNER_SEMGREP_TIMEOUT_SECONDS',
+    SCANNER,
+    NUMBER,
+    'Semgrep Rule Timeout',
+    'Per-rule Semgrep timeout in seconds.',
+    {
+      defaultValue: '60',
+      exampleValue: '60',
     },
   ),
   setting(
