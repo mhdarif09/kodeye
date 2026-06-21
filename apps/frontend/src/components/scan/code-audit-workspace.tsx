@@ -77,11 +77,13 @@ const scannerSteps = [
 ] as const;
 
 export function CodeAuditWorkspace({
+  className,
   findings,
   logs,
   scan,
   onAskAi,
 }: {
+  className?: string;
   findings: Finding[];
   logs: ScanLog[];
   scan: ScanJob;
@@ -155,7 +157,12 @@ export function CodeAuditWorkspace({
   }
 
   return (
-    <Card className="overflow-hidden border-slate-800 bg-[#07111f] p-0 text-slate-100 shadow-2xl shadow-slate-200">
+    <Card
+      className={cn(
+        'flex h-full min-h-0 flex-col overflow-hidden border-slate-800 bg-[#07111f] p-0 text-slate-100 shadow-2xl shadow-slate-200',
+        className,
+      )}
+    >
       <div className="flex min-h-12 items-center justify-between border-b border-white/10 bg-[#0b1220] px-4">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex items-center gap-1.5">
@@ -195,7 +202,7 @@ export function CodeAuditWorkspace({
         </div>
       </div>
 
-      <div className="grid min-h-[760px] xl:grid-cols-[48px_280px_minmax(520px,1fr)] 2xl:grid-cols-[48px_290px_minmax(600px,1fr)_340px]">
+      <div className="grid min-h-0 flex-1 overflow-hidden xl:grid-cols-[48px_280px_minmax(0,1fr)_340px]">
         <ActivityBar active={selectedFinding ? 'problems' : 'files'} />
 
         <aside className="border-b border-white/10 bg-[#0a1322] xl:border-b-0 xl:border-r">
@@ -221,7 +228,7 @@ export function CodeAuditWorkspace({
           <div className="border-b border-white/10 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-600">
             Scan target
           </div>
-          <div className="max-h-[360px] space-y-1 overflow-auto p-3 xl:max-h-[626px]">
+          <div className="max-h-[360px] space-y-1 overflow-auto p-3 xl:max-h-none">
             {displayFiles.map((file) => (
               <button
                 className={cn(
@@ -257,7 +264,7 @@ export function CodeAuditWorkspace({
           </div>
         </aside>
 
-        <main className="flex min-w-0 flex-col border-b border-white/10 bg-[#07111f] 2xl:border-b-0 2xl:border-r">
+        <main className="flex min-h-0 min-w-0 flex-col border-b border-white/10 bg-[#07111f] xl:border-b-0 xl:border-r">
           <div className="flex min-h-11 items-end gap-1 border-b border-white/10 bg-[#0a1322] px-3">
             <div className="flex max-w-full items-center gap-2 rounded-t-lg border-x border-t border-white/10 bg-[#07111f] px-3 py-2">
               <FileCode2 className="h-4 w-4 shrink-0 text-cyan-300" />
@@ -304,11 +311,11 @@ export function CodeAuditWorkspace({
           <TerminalPanel logs={logs} scan={scan} />
         </main>
 
-        <aside className="bg-[#0a1322] xl:col-span-3 2xl:col-span-1">
+        <aside className="min-h-0 bg-[#0a1322]">
           <div className="border-b border-white/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
             Inspector
           </div>
-          <div className="grid max-h-none gap-4 overflow-visible p-4 lg:grid-cols-2 xl:grid-cols-3 2xl:block 2xl:max-h-[708px] 2xl:space-y-5 2xl:overflow-auto">
+          <div className="h-full min-h-0 space-y-4 overflow-auto p-4">
             <AiScanCoach
               findings={findings}
               logs={logs}
@@ -327,7 +334,7 @@ export function CodeAuditWorkspace({
               selectedFinding={selectedFinding}
               setQuestion={setAiQuestion}
             />
-            <div className="rounded-xl border border-white/10 bg-slate-950/40 p-3 2xl:border-0 2xl:bg-transparent 2xl:p-0">
+            <div className="rounded-xl border border-white/10 bg-slate-950/40 p-3">
               <div className="mb-3 flex items-center justify-between">
                 <p className="flex items-center gap-2 text-sm font-bold text-white">
                   <TerminalSquare className="h-4 w-4 text-cyan-300" />
@@ -345,7 +352,7 @@ export function CodeAuditWorkspace({
               </div>
             </div>
 
-            <div className="space-y-3 rounded-xl border border-white/10 bg-slate-950/40 p-3 2xl:border-0 2xl:bg-transparent 2xl:p-0">
+            <div className="space-y-3 rounded-xl border border-white/10 bg-slate-950/40 p-3">
               {scannerSteps.map((step) => {
                 const state = progress.states[step.key];
                 const Icon =
@@ -392,7 +399,7 @@ export function CodeAuditWorkspace({
               })}
             </div>
 
-            <div className="rounded-xl border border-white/10 bg-slate-950/50 p-3 lg:col-span-2 xl:col-span-1">
+            <div className="rounded-xl border border-white/10 bg-slate-950/50 p-3">
               <p className="flex items-center gap-2 text-sm font-bold text-white">
                 <ShieldAlert className="h-4 w-4 text-red-300" />
                 Findings in this file
@@ -432,7 +439,7 @@ export function CodeAuditWorkspace({
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-xs leading-5 text-slate-400 lg:col-span-2 xl:col-span-3 2xl:col-span-1">
+            <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-xs leading-5 text-slate-400">
               Source code is scanned in the temporary worker workspace. This UI
               shows masked evidence and finding context, not a persisted copy of
               the repository.

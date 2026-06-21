@@ -65,14 +65,15 @@ export default function ScanDetailPage() {
   }
 
   return (
-    <div className="space-y-4 lg:relative lg:left-1/2 lg:w-[calc(100vw-18rem)] lg:-translate-x-1/2 2xl:w-[calc(100vw-20rem)]">
+    <div className="fixed inset-x-0 bottom-0 top-16 z-20 bg-[#07111f] lg:left-64">
       <Link
-        className="inline-flex items-center gap-2 px-1 text-sm font-semibold text-slate-500 hover:text-slate-950"
+        className="absolute bottom-4 left-4 z-30 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-slate-950/80 px-3 py-2 text-xs font-semibold text-slate-300 shadow-lg backdrop-blur hover:text-white"
         href="/dashboard/scans"
       >
         <ArrowLeft className="h-4 w-4" /> Scan history
       </Link>
       <CodeAuditWorkspace
+        className="rounded-none border-0 shadow-none"
         findings={findings}
         logs={logs}
         onAskAi={setAiFinding}
