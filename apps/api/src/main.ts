@@ -29,13 +29,18 @@ async function bootstrap(): Promise<void> {
   if (isProduction && (frontendUrls.length === 0 || frontendUrls.includes('*')))
     throw new Error('Production CORS_ORIGIN must contain explicit origins');
 
-  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+  const expressInstance = app.getHttpAdapter().getInstance();
+  expressInstance.disable('x-powered-by');
+  expressInstance.set('trust proxy', 1);
   app.setGlobalPrefix('api');
   app.use(
     securityMiddleware(
       settings.getNumber('RATE_LIMIT_MAX', 30),
       settings.getNumber('RATE_LIMIT_WINDOW_MS', 60_000),
       isProduction && settings.getBoolean('REQUIRE_HTTPS', true),
+      settings.getNumber('API_MAX_BODY_BYTES', 1024 * 1024),
+      settings.getBoolean('RATE_LIMIT_ENABLED', true),
+      frontendUrls,
     ),
   );
   app.use(cookieParser());
@@ -59,14 +64,16 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new ResponseInterceptor());
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('Kodeye API')
-    .setDescription('Kodeye backend core API')
-    .setVersion('2.0')
-    .addBearerAuth()
-    .build();
-  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, swaggerDocument);
+  if (!isProduction || settings.getBoolean('API_DOCS_ENABLED', false)) {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('Kodeye API')
+      .setDescription('Kodeye backend core API')
+      .setVersion('2.0')
+      .addBearerAuth()
+      .build();
+    const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, swaggerDocument);
+  }
 
   await app.listen(port);
 }

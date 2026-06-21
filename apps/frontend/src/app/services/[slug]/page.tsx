@@ -18,7 +18,15 @@ export async function generateMetadata({
   const service = getService(slug);
   if (!service) return {};
   return {
+    alternates: {
+      canonical: service.href,
+    },
     description: service.description,
+    openGraph: {
+      description: service.description,
+      title: `${service.title} Services | Kodeye`,
+      url: service.href,
+    },
     title: `${service.title} Services`,
   };
 }
@@ -267,9 +275,9 @@ export default async function ServiceDetailPage({
               Tell us what you want to improve with {service.title}.
             </h2>
             <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">
-              Share the business goal, current system, timeline, and constraints.
-              The sales team will review it inside the admin console and follow
-              up with a practical next step.
+              Share the business goal, current system, timeline, and
+              constraints. The sales team will review it inside the admin
+              console and follow up with a practical next step.
             </p>
           </div>
           <Link

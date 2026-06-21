@@ -48,6 +48,8 @@ dari halaman ini.
 | `LANDING_URL`                    | App URL      | No      | Deployment domain    | `https://kodeye.net`                             | App URLs            | Landing links           | Open landing      |
 | `FRONTEND_URL`                   | App URL      | No      | Deployment domain    | `https://app.kodeye.net`                         | App URLs            | Redirect/CORS default   | Login             |
 | `API_URL`                        | App URL      | No      | Deployment domain    | `https://backend.kodeye.net`                     | App URLs            | Backend links           | Health            |
+| `API_DOCS_ENABLED`               | Security     | No      | Security policy      | `false`                                          | Security            | Swagger docs            | Open `/api/docs`  |
+| `API_MAX_BODY_BYTES`             | Security     | No      | Capacity policy      | `1048576`                                        | Security            | Request size guard      | Oversized request |
 | `CORS_ORIGIN`                    | App URL      | No      | Allowed domains      | comma-separated origins                          | App URLs            | Browser API access      | Browser request   |
 | `PAYMENT_SUCCESS_URL`            | Payment URL  | No      | App route            | billing success URL                              | App URLs            | Provider redirect       | Payment success   |
 | `PAYMENT_PENDING_URL`            | Payment URL  | No      | App route            | billing pending URL                              | App URLs            | Provider redirect       | Pending payment   |

@@ -4,6 +4,12 @@ import Link from 'next/link';
 import { services } from './service-data';
 import { CheckItem, ServicePageLayout } from './service-shell';
 
+export const metadata = {
+  description:
+    'Explore Kodeye services for AI automation, engineering consulting, DevOps infrastructure, and website development.',
+  title: 'Engineering and AI Automation Services',
+};
+
 export default function ServicesPage() {
   return (
     <ServicePageLayout>

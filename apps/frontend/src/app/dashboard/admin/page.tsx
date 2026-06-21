@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   Activity,
   CreditCard,
+  FileText,
   KeyRound,
   ListChecks,
   MessageSquareText,
@@ -31,9 +32,12 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     if (!isLoading && user?.role !== 'ADMIN') router.replace('/dashboard');
     if (user?.role !== 'ADMIN') return;
-    adminApi.dashboard().then(setSummary).catch((caught) => {
-      setError(getErrorMessage(caught));
-    });
+    adminApi
+      .dashboard()
+      .then(setSummary)
+      .catch((caught) => {
+        setError(getErrorMessage(caught));
+      });
   }, [isLoading, router, user?.role]);
 
   if (isLoading || (user?.role === 'ADMIN' && !summary)) return <Spinner />;
@@ -101,6 +105,12 @@ export default function AdminDashboardPage() {
             label: 'Audit logs',
             text: 'Track admin changes and sensitive operations.',
           },
+          {
+            href: '/dashboard/admin/blog',
+            icon: FileText,
+            label: 'Blog',
+            text: 'Create, update, publish, unpublish, and delete blog posts.',
+          },
         ].map(({ href, icon: Icon, label, text }) => (
           <Link
             className="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft transition hover:-translate-y-0.5 hover:shadow-lg"
@@ -140,7 +150,7 @@ export default function AdminDashboardPage() {
               <div className="rounded-xl bg-slate-50 p-3 text-sm" key={scan.id}>
                 <div className="font-semibold">{scan.repository.name}</div>
                 <div className="text-slate-500">
-                  {scan.status} · {scan.totalFindings} findings
+                  {scan.status} - {scan.totalFindings} findings
                 </div>
               </div>
             ))}
@@ -153,7 +163,7 @@ export default function AdminDashboardPage() {
               <div className="rounded-xl bg-slate-50 p-3 text-sm" key={log.id}>
                 <div className="font-semibold">{log.action}</div>
                 <div className="text-slate-500">
-                  {log.resourceKey ?? log.resourceType} ·{' '}
+                  {log.resourceKey ?? log.resourceType} -{' '}
                   {log.actor?.email ?? 'system'}
                 </div>
               </div>

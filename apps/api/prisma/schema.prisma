@@ -152,6 +152,11 @@ enum SalesInquiryStatus {
   LOST
 }
 
+enum BlogPostStatus {
+  DRAFT
+  PUBLISHED
+}
+
 enum SettingValueType {
   STRING
   NUMBER
@@ -204,6 +209,7 @@ model User {
   updatedSettings        AppSetting[]
   adminAuditLogs         AdminAuditLog[]
   workspaces             Workspace[]
+  blogPosts              BlogPost[]
 
   @@map("users")
 }
@@ -503,6 +509,27 @@ model Report {
   scanJob ScanJob @relation(fields: [scanJobId], references: [id], onDelete: Cascade)
 
   @@map("reports")
+}
+
+model BlogPost {
+  id              String         @id @default(cuid())
+  authorUserId    String?        @map("author_user_id")
+  title           String         @db.VarChar(255)
+  slug            String         @unique @db.VarChar(255)
+  excerpt         String         @db.VarChar(500)
+  content         String         @db.LongText
+  status          BlogPostStatus @default(DRAFT)
+  metaTitle       String?        @map("meta_title") @db.VarChar(255)
+  metaDescription String?        @map("meta_description") @db.VarChar(500)
+  publishedAt     DateTime?      @map("published_at")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  author User? @relation(fields: [authorUserId], references: [id], onDelete: SetNull)
+
+  @@index([authorUserId])
+  @@index([status, publishedAt])
+  @@map("blog_posts")
 }
 
 model Currency {

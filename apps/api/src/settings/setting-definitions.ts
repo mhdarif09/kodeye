@@ -74,6 +74,32 @@ export const SETTING_DEFINITIONS: SettingDefinition[] = [
     whereToGet: 'Domain backend Kodeye.',
   }),
   setting(
+    'API_DOCS_ENABLED',
+    SECURITY,
+    BOOLEAN,
+    'API Docs Enabled',
+    'Enable Swagger API documentation. Keep disabled in production unless access is restricted.',
+    {
+      defaultValue: 'false',
+      exampleValue: 'false',
+      restartRequired: true,
+      whereToGet: 'Security policy for the deployed API.',
+    },
+  ),
+  setting(
+    'API_MAX_BODY_BYTES',
+    SECURITY,
+    NUMBER,
+    'API Max Body Bytes',
+    'Maximum request body size accepted before validation.',
+    {
+      defaultValue: '1048576',
+      exampleValue: '1048576',
+      restartRequired: true,
+      whereToGet: 'Backend capacity and upload policy.',
+    },
+  ),
+  setting(
     'CORS_ORIGIN',
     APP,
     STRING,

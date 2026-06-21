@@ -10,8 +10,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
+import Script from 'next/script';
 
 import { MarketingNav } from '../components/marketing-nav';
+import { absoluteUrl, defaultSeoDescription } from '../lib/seo';
 import { services } from './services/service-data';
 
 const stats = [
@@ -188,8 +190,30 @@ const footerColumns = [
 ];
 
 export default function HomePage() {
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    applicationCategory: 'DeveloperApplication',
+    description: defaultSeoDescription,
+    name: 'Kodeye',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'IDR',
+    },
+    operatingSystem: 'Web',
+    url: absoluteUrl('/'),
+  };
+
   return (
     <main className="min-h-screen overflow-hidden bg-[#f7f5ef] text-slate-950">
+      <Script
+        id="kodeye-software-jsonld"
+        strategy="beforeInteractive"
+        type="application/ld+json"
+      >
+        {JSON.stringify(structuredData)}
+      </Script>
       <MarketingNav />
 
       <section className="relative border-b border-slate-200 bg-[#f7f5ef]">

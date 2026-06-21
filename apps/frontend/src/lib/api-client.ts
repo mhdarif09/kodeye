@@ -49,9 +49,7 @@ export async function apiClient<T>(
     );
   }
 
-  const payload = (await response.json()) as
-    | ApiSuccessResponse<T>
-    | ApiErrorResponse;
+  const payload = await parseApiResponse<T>(response);
 
   if (!response.ok || !payload.success) {
     if (response.status === 401 && options.authenticated) {
@@ -66,4 +64,26 @@ export async function apiClient<T>(
   }
 
   return payload.data;
+}
+
+async function parseApiResponse<T>(
+  response: Response,
+): Promise<ApiSuccessResponse<T> | ApiErrorResponse> {
+  const contentType = response.headers.get('content-type') ?? '';
+  if (!contentType.includes('application/json')) {
+    return {
+      message: response.ok
+        ? 'Kodeye API returned an unexpected response.'
+        : `Kodeye API returned an unexpected ${response.status} response.`,
+      success: false,
+    };
+  }
+  try {
+    return (await response.json()) as ApiSuccessResponse<T> | ApiErrorResponse;
+  } catch {
+    return {
+      message: 'Kodeye API returned invalid JSON.',
+      success: false,
+    };
+  }
 }

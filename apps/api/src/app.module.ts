@@ -18,6 +18,7 @@ import { AdminModule } from './admin/admin.module';
 import { AiModule } from './ai/ai.module';
 import { SalesModule } from './sales/sales.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
+import { BlogModule } from './blog/blog.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { WorkspacesModule } from './workspaces/workspaces.module';
     AiModule,
     SalesModule,
     WorkspacesModule,
+    BlogModule,
   ],
 })
 export class AppModule {}

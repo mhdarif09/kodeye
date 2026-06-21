@@ -12,6 +12,7 @@ const navItems = [
   { href: '/#services', label: 'Services' },
   { href: '/#customers', label: 'Customers' },
   { href: '/#pricing', label: 'Pricing' },
+  { href: '/blog', label: 'Blog' },
 ];
 
 export function MarketingNav() {

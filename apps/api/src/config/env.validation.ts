@@ -147,6 +147,8 @@ class EnvironmentVariables {
   @IsOptional() @IsString() INVOICE_PDF_ENABLED?: string;
   @IsOptional() @IsString() APP_URL?: string;
   @IsOptional() @IsUrl({ require_tld: false }) API_URL?: string;
+  @IsOptional() @IsString() API_DOCS_ENABLED?: string;
+  @IsOptional() @IsString() API_MAX_BODY_BYTES?: string;
   @IsOptional() @IsString() CORS_ORIGIN?: string;
   @IsOptional() @IsString() SCAN_WORKER_ENABLED?: string;
   @IsOptional() @IsString() AUTO_SCAN_ON_SYNC_ENABLED?: string;
