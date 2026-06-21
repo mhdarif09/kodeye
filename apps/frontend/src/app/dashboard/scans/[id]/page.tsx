@@ -65,9 +65,9 @@ export default function ScanDetailPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 lg:relative lg:left-1/2 lg:w-[calc(100vw-18rem)] lg:-translate-x-1/2 2xl:w-[calc(100vw-20rem)]">
       <Link
-        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-950"
+        className="inline-flex items-center gap-2 px-1 text-sm font-semibold text-slate-500 hover:text-slate-950"
         href="/dashboard/scans"
       >
         <ArrowLeft className="h-4 w-4" /> Scan history

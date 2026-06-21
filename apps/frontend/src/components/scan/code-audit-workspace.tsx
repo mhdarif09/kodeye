@@ -195,7 +195,7 @@ export function CodeAuditWorkspace({
         </div>
       </div>
 
-      <div className="grid min-h-[760px] xl:grid-cols-[48px_280px_minmax(560px,1fr)] 2xl:grid-cols-[48px_300px_minmax(640px,1fr)_360px]">
+      <div className="grid min-h-[760px] xl:grid-cols-[48px_280px_minmax(520px,1fr)] 2xl:grid-cols-[48px_290px_minmax(600px,1fr)_340px]">
         <ActivityBar active={selectedFinding ? 'problems' : 'files'} />
 
         <aside className="border-b border-white/10 bg-[#0a1322] xl:border-b-0 xl:border-r">
