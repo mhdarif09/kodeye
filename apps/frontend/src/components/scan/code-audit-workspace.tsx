@@ -99,6 +99,9 @@ export function CodeAuditWorkspace({
   const [sourceLoadingId, setSourceLoadingId] = useState('');
   const [sourceError, setSourceError] = useState('');
   const [aiQuestion, setAiQuestion] = useState('');
+  const [explorerOpen, setExplorerOpen] = useState(true);
+  const [inspectorOpen, setInspectorOpen] = useState(true);
+  const [terminalOpen, setTerminalOpen] = useState(true);
   const [aiChat, setAiChat] = useState<AiChatMessage[]>([
     {
       role: 'assistant',
@@ -114,6 +117,9 @@ export function CodeAuditWorkspace({
     selected?.findings[0];
   const progress = scannerProgress(logs, scan.status);
   const repositoryName = scan.repository.fullName ?? scan.repository.name;
+  const gridTemplateColumns = `${
+    explorerOpen ? '48px minmax(220px, 280px)' : '48px'
+  } minmax(0, 1fr) ${inspectorOpen ? 'minmax(280px, 340px)' : '0px'}`;
 
   async function openSource(finding: Finding) {
     setSourceError('');
@@ -202,67 +208,82 @@ export function CodeAuditWorkspace({
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 overflow-hidden xl:grid-cols-[48px_280px_minmax(0,1fr)_340px]">
-        <ActivityBar active={selectedFinding ? 'problems' : 'files'} />
+      <div
+        className="grid min-h-0 flex-1 overflow-hidden"
+        style={{ gridTemplateColumns }}
+      >
+        <ActivityBar
+          active={selectedFinding ? 'problems' : 'files'}
+          explorerOpen={explorerOpen}
+          inspectorOpen={inspectorOpen}
+          onToggleExplorer={() => setExplorerOpen((current) => !current)}
+          onToggleInspector={() => setInspectorOpen((current) => !current)}
+          onToggleTerminal={() => setTerminalOpen((current) => !current)}
+          terminalOpen={terminalOpen}
+        />
 
-        <aside className="border-b border-white/10 bg-[#0a1322] xl:border-b-0 xl:border-r">
-          <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-              Explorer
-            </p>
-            <span className="rounded bg-white/5 px-2 py-0.5 text-[10px] font-bold text-slate-400">
-              {displayFiles.length} files
-            </span>
-          </div>
-          <div className="border-b border-white/10 px-4 py-3">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-600">
-              Workspace
-            </p>
-            <p className="truncate text-sm font-semibold text-slate-200">
-              {repositoryName}
-            </p>
-            <p className="mt-1 text-xs text-slate-500">
-              {scan.status.toLowerCase()} | {findings.length} saved findings
-            </p>
-          </div>
-          <div className="border-b border-white/10 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-600">
-            Scan target
-          </div>
-          <div className="max-h-[360px] space-y-1 overflow-auto p-3 xl:max-h-none">
-            {displayFiles.map((file) => (
-              <button
-                className={cn(
-                  'group flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition',
-                  selected?.path === file.path
-                    ? 'bg-cyan-400/10 text-white ring-1 ring-cyan-400/20'
-                    : 'text-slate-400 hover:bg-white/5 hover:text-slate-100',
-                )}
-                key={file.path}
-                onClick={() => setSelectedPath(file.path)}
-                type="button"
-              >
-                {file.path.endsWith('/') ? (
-                  <Folder className="h-4 w-4 shrink-0 text-cyan-300" />
-                ) : (
-                  <FileCode2
-                    className={cn(
-                      'h-4 w-4 shrink-0',
-                      selected?.path === file.path
-                        ? 'text-cyan-200'
-                        : 'text-slate-500',
-                    )}
-                  />
-                )}
-                <span className="truncate font-mono text-xs">{file.path}</span>
-                {file.findings.length ? (
-                  <span className="ml-auto rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-bold text-red-200 ring-1 ring-red-400/20">
-                    {file.findings.length}
+        {explorerOpen ? (
+          <aside className="min-h-0 border-r border-white/10 bg-[#0a1322]">
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Explorer
+              </p>
+              <span className="rounded bg-white/5 px-2 py-0.5 text-[10px] font-bold text-slate-400">
+                {displayFiles.length} files
+              </span>
+            </div>
+            <div className="border-b border-white/10 px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-600">
+                Workspace
+              </p>
+              <p className="truncate text-sm font-semibold text-slate-200">
+                {repositoryName}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                {scan.status.toLowerCase()} | {findings.length} saved findings
+              </p>
+            </div>
+            <div className="border-b border-white/10 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-600">
+              Scan target
+            </div>
+            <div className="max-h-[360px] space-y-1 overflow-auto p-3 xl:max-h-none">
+              {displayFiles.map((file) => (
+                <button
+                  className={cn(
+                    'group flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition',
+                    selected?.path === file.path
+                      ? 'bg-cyan-400/10 text-white ring-1 ring-cyan-400/20'
+                      : 'text-slate-400 hover:bg-white/5 hover:text-slate-100',
+                  )}
+                  key={file.path}
+                  onClick={() => setSelectedPath(file.path)}
+                  type="button"
+                >
+                  {file.path.endsWith('/') ? (
+                    <Folder className="h-4 w-4 shrink-0 text-cyan-300" />
+                  ) : (
+                    <FileCode2
+                      className={cn(
+                        'h-4 w-4 shrink-0',
+                        selected?.path === file.path
+                          ? 'text-cyan-200'
+                          : 'text-slate-500',
+                      )}
+                    />
+                  )}
+                  <span className="truncate font-mono text-xs">
+                    {file.path}
                   </span>
-                ) : null}
-              </button>
-            ))}
-          </div>
-        </aside>
+                  {file.findings.length ? (
+                    <span className="ml-auto rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-bold text-red-200 ring-1 ring-red-400/20">
+                      {file.findings.length}
+                    </span>
+                  ) : null}
+                </button>
+              ))}
+            </div>
+          </aside>
+        ) : null}
 
         <main className="flex min-h-0 min-w-0 flex-col border-b border-white/10 bg-[#07111f] xl:border-b-0 xl:border-r">
           <div className="flex min-h-11 items-end gap-1 border-b border-white/10 bg-[#0a1322] px-3">
@@ -308,144 +329,160 @@ export function CodeAuditWorkspace({
               />
             )}
           </div>
-          <TerminalPanel logs={logs} scan={scan} />
-        </main>
-
-        <aside className="min-h-0 bg-[#0a1322]">
-          <div className="border-b border-white/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-            Inspector
-          </div>
-          <div className="h-full min-h-0 space-y-4 overflow-auto p-4">
-            <AiScanCoach
-              findings={findings}
+          {terminalOpen ? (
+            <TerminalPanel
               logs={logs}
-              progress={progress.percent}
+              onClose={() => setTerminalOpen(false)}
               scan={scan}
             />
-            <AiAssistantPanel
-              chatError={aiChatError}
-              chatLoading={aiChatLoading}
-              messages={aiChat}
-              onAsk={(prompt) => void askWorkspaceAi(prompt)}
-              onOpenFullReview={() =>
-                selectedFinding ? onAskAi(selectedFinding) : undefined
-              }
-              question={aiQuestion}
-              selectedFinding={selectedFinding}
-              setQuestion={setAiQuestion}
+          ) : (
+            <CollapsedTerminalBar
+              logs={logs}
+              onOpen={() => setTerminalOpen(true)}
+              scan={scan}
             />
-            <div className="rounded-xl border border-white/10 bg-slate-950/40 p-3">
-              <div className="mb-3 flex items-center justify-between">
-                <p className="flex items-center gap-2 text-sm font-bold text-white">
-                  <TerminalSquare className="h-4 w-4 text-cyan-300" />
-                  Scanner progress
-                </p>
-                <span className="text-xs font-semibold text-cyan-200">
-                  {progress.percent}%
-                </span>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-slate-800">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-emerald-300 to-indigo-400 transition-all"
-                  style={{ width: `${progress.percent}%` }}
-                />
-              </div>
-            </div>
+          )}
+        </main>
 
-            <div className="space-y-3 rounded-xl border border-white/10 bg-slate-950/40 p-3">
-              {scannerSteps.map((step) => {
-                const state = progress.states[step.key];
-                const Icon =
-                  state === 'done'
-                    ? CheckCircle2
-                    : state === 'running'
-                      ? Loader2
-                      : state === 'failed'
-                        ? AlertTriangle
-                        : Circle;
-                return (
-                  <div className="flex items-center gap-3" key={step.key}>
-                    <Icon
-                      className={cn(
-                        'h-4 w-4',
-                        state === 'done' && 'text-emerald-400',
-                        state === 'running' && 'animate-spin text-cyan-300',
-                        state === 'failed' && 'text-red-400',
-                        state === 'waiting' && 'text-slate-600',
-                      )}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p
-                        className={cn(
-                          'text-sm font-semibold',
-                          state === 'waiting' ? 'text-slate-500' : 'text-white',
-                        )}
-                      >
-                        {step.label}
-                      </p>
-                      <p
-                        className={cn(
-                          'truncate text-xs',
-                          state === 'waiting'
-                            ? 'text-slate-500'
-                            : 'text-slate-300',
-                        )}
-                      >
-                        {latestMatchingLog(logs, step.match) ?? 'Waiting'}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+        {inspectorOpen ? (
+          <aside className="min-h-0 bg-[#0a1322]">
+            <div className="border-b border-white/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Inspector
             </div>
-
-            <div className="rounded-xl border border-white/10 bg-slate-950/50 p-3">
-              <p className="flex items-center gap-2 text-sm font-bold text-white">
-                <ShieldAlert className="h-4 w-4 text-red-300" />
-                Findings in this file
-              </p>
-              <div className="mt-3 space-y-2">
-                {selected?.findings.length ? (
-                  selected.findings.map((finding) => (
-                    <button
-                      className={cn(
-                        'w-full rounded-lg border p-3 text-left transition',
-                        selectedFinding?.id === finding.id
-                          ? 'border-cyan-400/30 bg-cyan-400/10'
-                          : 'border-white/10 bg-white/[0.03] hover:bg-white/[0.06]',
-                      )}
-                      key={finding.id}
-                      onClick={() => setSelectedFindingId(finding.id)}
-                      type="button"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-bold text-red-200">
-                          {finding.severity}
-                        </span>
-                        <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400">
-                          {finding.scanner}
-                        </span>
-                      </div>
-                      <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-slate-200">
-                        {finding.title}
-                      </p>
-                    </button>
-                  ))
-                ) : (
-                  <p className="text-xs leading-5 text-slate-500">
-                    No saved finding is attached to this selected path.
+            <div className="h-full min-h-0 space-y-4 overflow-auto p-4">
+              <AiScanCoach
+                findings={findings}
+                logs={logs}
+                progress={progress.percent}
+                scan={scan}
+              />
+              <AiAssistantPanel
+                chatError={aiChatError}
+                chatLoading={aiChatLoading}
+                messages={aiChat}
+                onAsk={(prompt) => void askWorkspaceAi(prompt)}
+                onOpenFullReview={() =>
+                  selectedFinding ? onAskAi(selectedFinding) : undefined
+                }
+                question={aiQuestion}
+                selectedFinding={selectedFinding}
+                setQuestion={setAiQuestion}
+              />
+              <div className="rounded-xl border border-white/10 bg-slate-950/40 p-3">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="flex items-center gap-2 text-sm font-bold text-white">
+                    <TerminalSquare className="h-4 w-4 text-cyan-300" />
+                    Scanner progress
                   </p>
-                )}
+                  <span className="text-xs font-semibold text-cyan-200">
+                    {progress.percent}%
+                  </span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-emerald-300 to-indigo-400 transition-all"
+                    style={{ width: `${progress.percent}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3 rounded-xl border border-white/10 bg-slate-950/40 p-3">
+                {scannerSteps.map((step) => {
+                  const state = progress.states[step.key];
+                  const Icon =
+                    state === 'done'
+                      ? CheckCircle2
+                      : state === 'running'
+                        ? Loader2
+                        : state === 'failed'
+                          ? AlertTriangle
+                          : Circle;
+                  return (
+                    <div className="flex items-center gap-3" key={step.key}>
+                      <Icon
+                        className={cn(
+                          'h-4 w-4',
+                          state === 'done' && 'text-emerald-400',
+                          state === 'running' && 'animate-spin text-cyan-300',
+                          state === 'failed' && 'text-red-400',
+                          state === 'waiting' && 'text-slate-600',
+                        )}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className={cn(
+                            'text-sm font-semibold',
+                            state === 'waiting'
+                              ? 'text-slate-500'
+                              : 'text-white',
+                          )}
+                        >
+                          {step.label}
+                        </p>
+                        <p
+                          className={cn(
+                            'truncate text-xs',
+                            state === 'waiting'
+                              ? 'text-slate-500'
+                              : 'text-slate-300',
+                          )}
+                        >
+                          {latestMatchingLog(logs, step.match) ?? 'Waiting'}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="rounded-xl border border-white/10 bg-slate-950/50 p-3">
+                <p className="flex items-center gap-2 text-sm font-bold text-white">
+                  <ShieldAlert className="h-4 w-4 text-red-300" />
+                  Findings in this file
+                </p>
+                <div className="mt-3 space-y-2">
+                  {selected?.findings.length ? (
+                    selected.findings.map((finding) => (
+                      <button
+                        className={cn(
+                          'w-full rounded-lg border p-3 text-left transition',
+                          selectedFinding?.id === finding.id
+                            ? 'border-cyan-400/30 bg-cyan-400/10'
+                            : 'border-white/10 bg-white/[0.03] hover:bg-white/[0.06]',
+                        )}
+                        key={finding.id}
+                        onClick={() => setSelectedFindingId(finding.id)}
+                        type="button"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-red-200">
+                            {finding.severity}
+                          </span>
+                          <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400">
+                            {finding.scanner}
+                          </span>
+                        </div>
+                        <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-slate-200">
+                          {finding.title}
+                        </p>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-xs leading-5 text-slate-500">
+                      No saved finding is attached to this selected path.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-xs leading-5 text-slate-400">
+                Source code is scanned in the temporary worker workspace. This
+                UI shows masked evidence and finding context, not a persisted
+                copy of the repository.
               </div>
             </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-xs leading-5 text-slate-400">
-              Source code is scanned in the temporary worker workspace. This UI
-              shows masked evidence and finding context, not a persisted copy of
-              the repository.
-            </div>
-          </div>
-        </aside>
+          </aside>
+        ) : null}
       </div>
 
       <div className="flex flex-col gap-2 border-t border-white/10 bg-[#0b1220] px-4 py-2 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
@@ -467,18 +504,58 @@ export function CodeAuditWorkspace({
   );
 }
 
-function ActivityBar({ active }: { active: 'files' | 'problems' }) {
+function ActivityBar({
+  active,
+  explorerOpen,
+  inspectorOpen,
+  onToggleExplorer,
+  onToggleInspector,
+  onToggleTerminal,
+  terminalOpen,
+}: {
+  active: 'files' | 'problems';
+  explorerOpen: boolean;
+  inspectorOpen: boolean;
+  onToggleExplorer: () => void;
+  onToggleInspector: () => void;
+  onToggleTerminal: () => void;
+  terminalOpen: boolean;
+}) {
   const items = [
-    { icon: Files, key: 'files', label: 'Explorer' },
-    { icon: Bug, key: 'problems', label: 'Problems' },
-    { icon: TerminalSquare, key: 'terminal', label: 'Terminal' },
-    { icon: Bot, key: 'ai', label: 'AI review' },
+    {
+      icon: Files,
+      key: 'files',
+      label: explorerOpen ? 'Hide Explorer' : 'Show Explorer',
+      onClick: onToggleExplorer,
+      selected: explorerOpen,
+    },
+    {
+      icon: Bug,
+      key: 'problems',
+      label: inspectorOpen ? 'Hide Inspector' : 'Show Inspector',
+      onClick: onToggleInspector,
+      selected: active === 'problems' || inspectorOpen,
+    },
+    {
+      icon: TerminalSquare,
+      key: 'terminal',
+      label: terminalOpen ? 'Hide Terminal' : 'Show Terminal',
+      onClick: onToggleTerminal,
+      selected: terminalOpen,
+    },
+    {
+      icon: Bot,
+      key: 'ai',
+      label: inspectorOpen ? 'Hide AI Panel' : 'Show AI Panel',
+      onClick: onToggleInspector,
+      selected: inspectorOpen,
+    },
   ] as const;
   return (
-    <nav className="hidden border-r border-white/10 bg-[#07111f] py-3 lg:flex lg:flex-col lg:items-center lg:gap-2">
+    <nav className="flex border-r border-white/10 bg-[#07111f] py-3 flex-col items-center gap-2">
       {items.map((item) => {
         const Icon = item.icon;
-        const selected = item.key === active;
+        const selected = item.selected;
         return (
           <button
             aria-label={item.label}
@@ -487,6 +564,7 @@ function ActivityBar({ active }: { active: 'files' | 'problems' }) {
               selected && 'bg-cyan-400/10 text-cyan-200',
             )}
             key={item.key}
+            onClick={item.onClick}
             title={item.label}
             type="button"
           >
@@ -501,7 +579,15 @@ function ActivityBar({ active }: { active: 'files' | 'problems' }) {
   );
 }
 
-function TerminalPanel({ logs, scan }: { logs: ScanLog[]; scan: ScanJob }) {
+function TerminalPanel({
+  logs,
+  onClose,
+  scan,
+}: {
+  logs: ScanLog[];
+  onClose: () => void;
+  scan: ScanJob;
+}) {
   const visibleLogs = logs.slice(-8);
   return (
     <section className="border-t border-white/10 bg-[#050b14]">
@@ -517,6 +603,13 @@ function TerminalPanel({ logs, scan }: { logs: ScanLog[]; scan: ScanJob }) {
         <span className="font-mono text-[11px] text-slate-500">
           scanner:{scan.status.toLowerCase()}
         </span>
+        <button
+          className="rounded border border-white/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 hover:bg-white/5 hover:text-slate-100"
+          onClick={onClose}
+          type="button"
+        >
+          Minimize
+        </button>
       </div>
       <div className="max-h-48 overflow-auto px-4 py-3 font-mono text-xs leading-6">
         <div className="text-slate-500">
@@ -531,8 +624,43 @@ function TerminalPanel({ logs, scan }: { logs: ScanLog[]; scan: ScanJob }) {
             waiting for scanner worker output...
           </div>
         )}
+        <div className="mt-3 grid grid-cols-[auto_1fr] items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-slate-500">
+          <span className="text-cyan-300">$</span>
+          <input
+            aria-label="Read-only terminal input"
+            className="w-full bg-transparent text-xs outline-none placeholder:text-slate-600"
+            disabled
+            placeholder="Terminal is read-only. Backend scanner worker runs commands in a protected environment."
+          />
+        </div>
       </div>
     </section>
+  );
+}
+
+function CollapsedTerminalBar({
+  logs,
+  onOpen,
+  scan,
+}: {
+  logs: ScanLog[];
+  onOpen: () => void;
+  scan: ScanJob;
+}) {
+  return (
+    <button
+      className="flex min-h-9 items-center justify-between border-t border-white/10 bg-[#050b14] px-4 text-left text-xs text-slate-400 hover:bg-white/[0.03]"
+      onClick={onOpen}
+      type="button"
+    >
+      <span className="flex items-center gap-2 font-bold uppercase tracking-[0.14em] text-cyan-200">
+        <PanelBottom className="h-4 w-4" />
+        Terminal
+      </span>
+      <span className="font-mono">
+        {scan.status.toLowerCase()} | {logs.length} events | read-only
+      </span>
+    </button>
   );
 }
 
@@ -984,6 +1112,18 @@ function EmptyEditorView({
 }) {
   const repository = scan.repository.fullName ?? scan.repository.name;
   const latestLogs = logs.slice(-5).reverse();
+  const [notes, setNotes] = useState(() =>
+    [
+      `# ${repository} audit notes`,
+      '',
+      'AI note: open a finding or source preview to edit real code with inline remediation comments.',
+      'Terminal note: the terminal below is read-only; backend scanners run in the protected worker.',
+      '',
+      '- Review scanner progress in the Inspector.',
+      '- Open files from Explorer when findings are available.',
+      '- Use Ask AI after selecting a finding.',
+    ].join('\n'),
+  );
   const StateIcon =
     scan.status === 'FAILED'
       ? XCircle
@@ -1088,6 +1228,25 @@ function EmptyEditorView({
             )}
           </div>
         </section>
+
+        <section className="lg:col-span-2 overflow-hidden rounded-xl border border-white/10 bg-slate-950/50">
+          <div className="flex items-center justify-between border-b border-white/10 bg-white/[0.03] px-4 py-3">
+            <p className="flex items-center gap-2 text-sm font-bold text-white">
+              <FileCode2 className="h-4 w-4 text-cyan-300" />
+              Editable audit notes
+            </p>
+            <span className="rounded bg-white/5 px-2 py-1 text-[10px] font-bold text-slate-400">
+              UI only
+            </span>
+          </div>
+          <textarea
+            aria-label="Editable audit notes"
+            className="min-h-64 w-full resize-y bg-transparent p-4 font-mono text-xs leading-6 text-slate-200 outline-none selection:bg-cyan-400/25"
+            onChange={(event) => setNotes(event.target.value)}
+            spellCheck={false}
+            value={notes}
+          />
+        </section>
       </div>
     </div>
   );
@@ -1188,6 +1347,10 @@ function latestMatchingLog(logs: ScanLog[], patterns: readonly string[]) {
 function editorLines(finding: Finding) {
   const start = finding.lineStart ?? 1;
   const evidence = finding.evidenceMasked?.trim();
+  const suggestion =
+    finding.recommendation ??
+    finding.impact ??
+    'Review this diagnostic and apply the smallest safe fix.';
   const body = evidence
     ? evidence.split(/\r?\n/)
     : [
@@ -1197,11 +1360,13 @@ function editorLines(finding: Finding) {
         `// CWE: ${finding.cwe ?? 'not provided'}`,
         `// OWASP: ${finding.owasp ?? 'not provided'}`,
       ];
-  return body.slice(0, 80).map((text, index) => ({
-    highlight: Boolean(evidence) || index === 0,
-    number: start + index,
-    text,
-  }));
+  return [`// Kodeye AI suggestion: ${suggestion}`, ...body]
+    .slice(0, 80)
+    .map((text, index) => ({
+      highlight: Boolean(evidence) || index === 0,
+      number: start + index,
+      text,
+    }));
 }
 
 function sourceEditorLines(content: string, finding: Finding) {
@@ -1210,13 +1375,25 @@ function sourceEditorLines(content: string, finding: Finding) {
   const endLine = Math.max(startLine, finding.lineEnd ?? startLine);
   const windowStart = Math.max(1, startLine - 12);
   const windowEnd = Math.min(allLines.length, endLine + 18);
+  const suggestion =
+    finding.recommendation ??
+    finding.impact ??
+    'Review this diagnostic and apply the smallest safe fix.';
 
-  return allLines.slice(windowStart - 1, windowEnd).map((text, index) => {
-    const number = windowStart + index;
-    return {
-      highlight: number >= startLine && number <= endLine,
-      number,
-      text,
-    };
-  });
+  const sourceLines = allLines
+    .slice(windowStart - 1, windowEnd)
+    .map((text, index) => {
+      const number = windowStart + index;
+      return {
+        highlight: number >= startLine && number <= endLine,
+        number,
+        text,
+      };
+    });
+  const suggestionLine = {
+    highlight: true,
+    number: Math.max(1, startLine - 1),
+    text: `// Kodeye AI suggestion: ${suggestion}`,
+  };
+  return [suggestionLine, ...sourceLines];
 }
