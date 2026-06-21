@@ -971,25 +971,6 @@ function EditableCodePane({
   );
 }
 
-function codeTone(text: string) {
-  const trimmed = text.trim();
-  if (trimmed.startsWith('//') || trimmed.startsWith('#')) {
-    return 'text-slate-500';
-  }
-  if (
-    /^(import|export|const|let|var|function|return|await|async)\b/.test(trimmed)
-  ) {
-    return 'text-cyan-100';
-  }
-  if (/[{}[\]();]/.test(trimmed)) {
-    return 'text-slate-200';
-  }
-  if (/['"`].*['"`]/.test(trimmed)) {
-    return 'text-emerald-100';
-  }
-  return 'text-slate-300';
-}
-
 function EmptyEditorView({
   file,
   logs,
@@ -1001,7 +982,8 @@ function EmptyEditorView({
   progress: number;
   scan: ScanJob;
 }) {
-  const lines = pipelineEditorLines(file, logs, progress, scan);
+  const repository = scan.repository.fullName ?? scan.repository.name;
+  const latestLogs = logs.slice(-5).reverse();
   const StateIcon =
     scan.status === 'FAILED'
       ? XCircle
@@ -1033,86 +1015,93 @@ function EmptyEditorView({
               </span>
             </div>
             <h3 className="mt-3 text-lg font-bold text-white">
-              {file?.isFolder ? 'Scanned folder selected' : 'Scan pipeline'}
+              {file?.isFolder
+                ? 'Scanned folder selected'
+                : 'Repository scan overview'}
             </h3>
             <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-400">
               {file?.isFolder
                 ? `${file.path} came from the scan inventory. Findings will open here as code diagnostics.`
-                : `Kodeye is treating ${scan.repository.fullName ?? scan.repository.name} as an editor workspace while the scanner runs.`}
+                : `Kodeye is preparing ${repository} as an audit workspace. Real source code appears here only after you open a finding or source preview.`}
             </p>
           </div>
         </div>
       </div>
-      <div className="bg-[#07111f] py-4">
-        <pre className="min-w-full text-xs leading-6 text-slate-300">
-          {lines.map((line, index) => (
-            <div
-              className={cn(
-                'grid min-h-6 grid-cols-[64px_1fr] border-l-2 border-transparent px-3',
-                line.highlight && 'border-cyan-400 bg-cyan-400/10 text-cyan-50',
-                !line.highlight && 'hover:bg-white/[0.035]',
-              )}
-              key={`${line.number}-${index}`}
-            >
-              <span className="select-none border-r border-white/10 pr-4 text-right text-slate-600">
-                {line.number}
-              </span>
-              <code
-                className={cn(
-                  'whitespace-pre-wrap px-4 font-mono',
-                  codeTone(line.text),
-                )}
-              >
-                {line.text || ' '}
-              </code>
+      <div className="grid gap-4 p-5 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="rounded-xl border border-white/10 bg-slate-950/50 p-5">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+            Active target
+          </p>
+          <h4 className="mt-3 text-2xl font-bold text-white">{repository}</h4>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <ScanOverviewItem
+              label="Branch"
+              value={scan.branch ?? scan.repository.defaultBranch}
+            />
+            <ScanOverviewItem
+              label="Selected path"
+              value={file?.path ?? repository}
+            />
+            <ScanOverviewItem label="Scanner status" value={scan.status} />
+            <ScanOverviewItem
+              label="Saved findings"
+              value={String(scan.totalFindings)}
+            />
+          </div>
+          <div className="mt-6">
+            <div className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-400">
+              <span>Scan progress</span>
+              <span>{progress}%</span>
             </div>
-          ))}
-        </pre>
+            <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-emerald-300 to-indigo-400 transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-xl border border-white/10 bg-slate-950/50 p-5">
+          <p className="flex items-center gap-2 text-sm font-bold text-white">
+            <TerminalSquare className="h-4 w-4 text-cyan-300" />
+            Recent scanner activity
+          </p>
+          <div className="mt-4 space-y-3">
+            {latestLogs.length ? (
+              latestLogs.map((log) => (
+                <div
+                  className="rounded-lg border border-white/10 bg-white/[0.03] p-3 text-xs leading-5"
+                  key={log.id}
+                >
+                  <span className="font-bold uppercase tracking-[0.12em] text-slate-500">
+                    {log.level}
+                  </span>
+                  <p className="mt-1 text-slate-300">{log.message}</p>
+                </div>
+              ))
+            ) : (
+              <p className="rounded-lg border border-white/10 bg-white/[0.03] p-3 text-xs leading-5 text-slate-500">
+                Waiting for scanner worker output. Source code will not be shown
+                until a real finding/source file is opened.
+              </p>
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );
 }
 
-function pipelineEditorLines(
-  file: AuditFile | undefined,
-  logs: ScanLog[],
-  progress: number,
-  scan: ScanJob,
-) {
-  const repository = scan.repository.fullName ?? scan.repository.name;
-  const latestLog = logs.at(-1)?.message ?? 'waiting for scanner worker';
-  const target = file?.path ?? repository;
-  const running = scan.status === 'RUNNING' || scan.status === 'PENDING';
-  return [
-    { highlight: false, number: 1, text: `// Kodeye scan workspace` },
-    { highlight: false, number: 2, text: `// Repository: ${repository}` },
-    {
-      highlight: false,
-      number: 3,
-      text: `// Branch: ${scan.branch ?? scan.repository.defaultBranch}`,
-    },
-    { highlight: false, number: 4, text: `// Target: ${target}` },
-    { highlight: false, number: 5, text: '' },
-    { highlight: running, number: 6, text: 'const scan = await kodeye.scan({' },
-    { highlight: false, number: 7, text: `  status: '${scan.status}',` },
-    { highlight: false, number: 8, text: `  progress: ${progress},` },
-    {
-      highlight: false,
-      number: 9,
-      text: `  scannerEvents: ${logs.length},`,
-    },
-    { highlight: false, number: 10, text: `  latest: '${latestLog}',` },
-    { highlight: false, number: 11, text: '});' },
-    { highlight: false, number: 12, text: '' },
-    {
-      highlight: scan.status === 'SUCCESS',
-      number: 13,
-      text:
-        scan.status === 'SUCCESS'
-          ? '// Done. Open a finding file from Explorer to review diagnostics.'
-          : '// Keep this editor open. Terminal output updates as scanner logs arrive.',
-    },
-  ];
+function ScanOverviewItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+        {label}
+      </p>
+      <p className="mt-2 truncate font-mono text-xs text-slate-200">{value}</p>
+    </div>
+  );
 }
 
 function groupFindingsByFile(findings: Finding[]): AuditFile[] {
