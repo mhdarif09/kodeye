@@ -117,10 +117,6 @@ export function CodeAuditWorkspace({
     selected?.findings[0];
   const progress = scannerProgress(logs, scan.status);
   const repositoryName = scan.repository.fullName ?? scan.repository.name;
-  const gridTemplateColumns = `${
-    explorerOpen ? '48px minmax(220px, 280px)' : '48px'
-  } minmax(0, 1fr) ${inspectorOpen ? 'minmax(280px, 340px)' : '0px'}`;
-
   async function openSource(finding: Finding) {
     setSourceError('');
     if (sourceFiles[finding.id]) return;
@@ -208,10 +204,7 @@ export function CodeAuditWorkspace({
         </div>
       </div>
 
-      <div
-        className="grid min-h-0 flex-1 overflow-hidden"
-        style={{ gridTemplateColumns }}
-      >
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         <ActivityBar
           active={selectedFinding ? 'problems' : 'files'}
           explorerOpen={explorerOpen}
@@ -223,7 +216,7 @@ export function CodeAuditWorkspace({
         />
 
         {explorerOpen ? (
-          <aside className="min-h-0 border-r border-white/10 bg-[#0a1322]">
+          <aside className="flex w-72 shrink-0 flex-col border-r border-white/10 bg-[#0a1322]">
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                 Explorer
@@ -246,7 +239,7 @@ export function CodeAuditWorkspace({
             <div className="border-b border-white/10 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-600">
               Scan target
             </div>
-            <div className="max-h-[360px] space-y-1 overflow-auto p-3 xl:max-h-none">
+            <div className="min-h-0 flex-1 space-y-1 overflow-auto p-3">
               {displayFiles.map((file) => (
                 <button
                   className={cn(
@@ -285,7 +278,7 @@ export function CodeAuditWorkspace({
           </aside>
         ) : null}
 
-        <main className="flex min-h-0 min-w-0 flex-col border-b border-white/10 bg-[#07111f] xl:border-b-0 xl:border-r">
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col border-r border-white/10 bg-[#07111f]">
           <div className="flex min-h-11 items-end gap-1 border-b border-white/10 bg-[#0a1322] px-3">
             <div className="flex max-w-full items-center gap-2 rounded-t-lg border-x border-t border-white/10 bg-[#07111f] px-3 py-2">
               <FileCode2 className="h-4 w-4 shrink-0 text-cyan-300" />
@@ -345,11 +338,11 @@ export function CodeAuditWorkspace({
         </main>
 
         {inspectorOpen ? (
-          <aside className="min-h-0 bg-[#0a1322]">
+          <aside className="flex w-[340px] shrink-0 flex-col bg-[#0a1322]">
             <div className="border-b border-white/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               Inspector
             </div>
-            <div className="h-full min-h-0 space-y-4 overflow-auto p-4">
+            <div className="min-h-0 flex-1 space-y-4 overflow-auto p-4">
               <AiScanCoach
                 findings={findings}
                 logs={logs}
@@ -1116,12 +1109,20 @@ function EmptyEditorView({
     [
       `# ${repository} audit notes`,
       '',
-      'AI note: open a finding or source preview to edit real code with inline remediation comments.',
-      'Terminal note: the terminal below is read-only; backend scanners run in the protected worker.',
+      '<!-- Kodeye AI suggestion: keep this workspace open while the protected backend worker scans the repository. -->',
+      '<!-- Terminal is read-only in the browser. Scanner commands run only in the worker sandbox. -->',
       '',
-      '- Review scanner progress in the Inspector.',
-      '- Open files from Explorer when findings are available.',
-      '- Use Ask AI after selecting a finding.',
+      '## Current audit target',
+      `- Repository: ${repository}`,
+      `- Branch: ${scan.branch ?? scan.repository.defaultBranch}`,
+      `- Selected path: ${file?.path ?? repository}`,
+      `- Status: ${scan.status}`,
+      `- Saved findings: ${scan.totalFindings}`,
+      '',
+      '## Reviewer notes',
+      '- Findings will open as editable code drafts after scanner evidence is saved.',
+      '- Open source from a finding to review the actual file snippet with AI comments.',
+      '- Ask AI can explain risk, root cause, smallest patch, tests, and side effects.',
     ].join('\n'),
   );
   const StateIcon =
@@ -1133,79 +1134,87 @@ function EmptyEditorView({
           ? PlayCircle
           : Clock3;
   return (
-    <div>
-      <div className="border-b border-white/10 bg-[#07111f] px-5 py-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-2 rounded-md bg-cyan-400/10 px-2.5 py-1 text-xs font-semibold text-cyan-100">
-                <StateIcon
-                  className={cn(
-                    'h-3.5 w-3.5',
-                    scan.status === 'RUNNING' && 'animate-pulse',
-                  )}
-                />
-                {scan.status}
-              </span>
-              <span className="rounded-md bg-white/5 px-2.5 py-1 text-xs font-semibold text-slate-300">
-                {progress}% scanned
-              </span>
-              <span className="rounded-md bg-white/5 px-2.5 py-1 text-xs font-semibold text-slate-300">
-                {logs.length} terminal events
-              </span>
-            </div>
-            <h3 className="mt-3 text-lg font-bold text-white">
-              {file?.isFolder
-                ? 'Scanned folder selected'
-                : 'Repository scan overview'}
-            </h3>
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-400">
-              {file?.isFolder
-                ? `${file.path} came from the scan inventory. Findings will open here as code diagnostics.`
-                : `Kodeye is preparing ${repository} as an audit workspace. Real source code appears here only after you open a finding or source preview.`}
-            </p>
-          </div>
-        </div>
+    <div className="flex h-full min-h-[560px] flex-col">
+      <div className="flex flex-wrap items-center gap-2 border-b border-white/10 bg-[#07111f] px-5 py-3">
+        <span className="inline-flex items-center gap-2 rounded-md bg-cyan-400/10 px-2.5 py-1 text-xs font-semibold text-cyan-100">
+          <StateIcon
+            className={cn(
+              'h-3.5 w-3.5',
+              scan.status === 'RUNNING' && 'animate-pulse',
+            )}
+          />
+          {scan.status}
+        </span>
+        <span className="rounded-md bg-white/5 px-2.5 py-1 text-xs font-semibold text-slate-300">
+          {progress}% scanned
+        </span>
+        <span className="rounded-md bg-white/5 px-2.5 py-1 text-xs font-semibold text-slate-300">
+          {logs.length} terminal events
+        </span>
+        <span className="min-w-0 truncate rounded-md bg-white/5 px-2.5 py-1 font-mono text-xs font-semibold text-slate-300">
+          {file?.path ?? repository}
+        </span>
       </div>
-      <div className="grid gap-4 p-5 lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="rounded-xl border border-white/10 bg-slate-950/50 p-5">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
-            Active target
+
+      <div className="flex min-h-0 flex-1">
+        <div className="hidden w-56 shrink-0 border-r border-white/10 bg-[#081321] p-3 lg:block">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-600">
+            Outline
           </p>
-          <h4 className="mt-3 text-2xl font-bold text-white">{repository}</h4>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <ScanOverviewItem
-              label="Branch"
-              value={scan.branch ?? scan.repository.defaultBranch}
-            />
-            <ScanOverviewItem
-              label="Selected path"
-              value={file?.path ?? repository}
-            />
-            <ScanOverviewItem label="Scanner status" value={scan.status} />
-            <ScanOverviewItem
-              label="Saved findings"
-              value={String(scan.totalFindings)}
-            />
+          <div className="mt-3 space-y-1 text-xs">
+            <p className="rounded bg-cyan-400/10 px-2 py-1 font-semibold text-cyan-100">
+              audit-notes.md
+            </p>
+            <p className="px-2 py-1 text-slate-500">Current audit target</p>
+            <p className="px-2 py-1 text-slate-500">Reviewer notes</p>
+            <p className="px-2 py-1 text-slate-500">Worker activity</p>
           </div>
-          <div className="mt-6">
-            <div className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-400">
-              <span>Scan progress</span>
+          <div className="mt-5 rounded-lg border border-white/10 bg-white/[0.03] p-3">
+            <div className="mb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">
+              <span>Scan</span>
               <span>{progress}%</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+            <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-emerald-300 to-indigo-400 transition-all"
+                className="h-full rounded-full bg-cyan-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
           </div>
-        </section>
+        </div>
 
-        <section className="rounded-xl border border-white/10 bg-slate-950/50 p-5">
+        <div className="min-w-0 flex-1">
+          <div className="flex min-h-10 items-center justify-between border-b border-white/10 bg-white/[0.02] px-4">
+            <p className="flex min-w-0 items-center gap-2 text-sm font-bold text-white">
+              <FileCode2 className="h-4 w-4 shrink-0 text-cyan-300" />
+              <span className="truncate">Editable audit notes</span>
+            </p>
+            <span className="rounded bg-white/5 px-2 py-1 text-[10px] font-bold text-slate-400">
+              UI only
+            </span>
+          </div>
+          <div className="grid min-h-[520px] grid-cols-[64px_minmax(0,1fr)] text-xs leading-6">
+            <div className="select-none border-r border-white/10 py-4 text-right font-mono text-slate-600">
+              {notes.split('\n').map((_, index) => (
+                <div className="h-6 pr-4" key={`note-line-${index}`}>
+                  {index + 1}
+                </div>
+              ))}
+            </div>
+            <textarea
+              aria-label="Editable audit notes"
+              className="min-h-[520px] w-full resize-none bg-transparent px-4 py-4 font-mono text-xs leading-6 text-slate-200 caret-cyan-300 outline-none selection:bg-cyan-400/25"
+              onChange={(event) => setNotes(event.target.value)}
+              spellCheck={false}
+              value={notes}
+            />
+          </div>
+        </div>
+
+        <div className="hidden w-72 shrink-0 border-l border-white/10 bg-[#081321] p-4 2xl:block">
           <p className="flex items-center gap-2 text-sm font-bold text-white">
             <TerminalSquare className="h-4 w-4 text-cyan-300" />
-            Recent scanner activity
+            Worker activity
           </p>
           <div className="mt-4 space-y-3">
             {latestLogs.length ? (
@@ -1222,43 +1231,13 @@ function EmptyEditorView({
               ))
             ) : (
               <p className="rounded-lg border border-white/10 bg-white/[0.03] p-3 text-xs leading-5 text-slate-500">
-                Waiting for scanner worker output. Source code will not be shown
-                until a real finding/source file is opened.
+                Waiting for scanner worker output. Real source appears after a
+                finding/source preview is opened.
               </p>
             )}
           </div>
-        </section>
-
-        <section className="lg:col-span-2 overflow-hidden rounded-xl border border-white/10 bg-slate-950/50">
-          <div className="flex items-center justify-between border-b border-white/10 bg-white/[0.03] px-4 py-3">
-            <p className="flex items-center gap-2 text-sm font-bold text-white">
-              <FileCode2 className="h-4 w-4 text-cyan-300" />
-              Editable audit notes
-            </p>
-            <span className="rounded bg-white/5 px-2 py-1 text-[10px] font-bold text-slate-400">
-              UI only
-            </span>
-          </div>
-          <textarea
-            aria-label="Editable audit notes"
-            className="min-h-64 w-full resize-y bg-transparent p-4 font-mono text-xs leading-6 text-slate-200 outline-none selection:bg-cyan-400/25"
-            onChange={(event) => setNotes(event.target.value)}
-            spellCheck={false}
-            value={notes}
-          />
-        </section>
+        </div>
       </div>
-    </div>
-  );
-}
-
-function ScanOverviewItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
-        {label}
-      </p>
-      <p className="mt-2 truncate font-mono text-xs text-slate-200">{value}</p>
     </div>
   );
 }
