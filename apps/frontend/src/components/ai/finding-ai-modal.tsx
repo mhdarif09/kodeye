@@ -116,8 +116,8 @@ export function FindingAiModal({
             return (
               <>
                 <EditorChrome finding={finding} scan={scan} />
-                <div className="grid min-h-[640px] lg:grid-cols-[minmax(0,1fr)_330px]">
-                  <main className="min-w-0 border-b border-white/10 lg:border-b-0 lg:border-r">
+                <div className="grid min-h-[640px] xl:grid-cols-[minmax(680px,1fr)_380px]">
+                  <main className="min-w-0 border-b border-white/10 xl:border-b-0 xl:border-r">
                     <EditorTab finding={finding} />
                     <div className="flex items-center gap-1 border-b border-white/10 px-4 py-2 text-xs text-slate-500">
                       <span className="truncate">
@@ -130,7 +130,7 @@ export function FindingAiModal({
                         {finding.filePath ?? 'finding.json'}
                       </span>
                     </div>
-                    <div className="max-h-[585px] overflow-auto">
+                    <div className="max-h-none overflow-visible xl:max-h-[585px] xl:overflow-auto">
                       <FindingEditorView finding={finding} />
 
                       <section className="border-t border-white/10 bg-[#081827] p-5">
@@ -261,7 +261,7 @@ export function FindingAiModal({
                     <div className="border-b border-white/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                       Inspector
                     </div>
-                    <div className="max-h-[640px] space-y-4 overflow-auto p-4">
+                    <div className="grid max-h-none gap-4 overflow-visible p-4 md:grid-cols-2 xl:block xl:max-h-[640px] xl:space-y-4 xl:overflow-auto">
                       <InspectorPanel finding={finding} scan={scan} />
                       <FixPanel
                         eligibility={eligibility}
@@ -286,7 +286,7 @@ export function FindingAiModal({
                           </a>
                         </div>
                       ) : null}
-                      <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3">
+                      <div className="rounded-xl border border-white/10 bg-slate-950/60 p-3 md:col-span-2 xl:col-span-1">
                         <p className="mb-2 flex items-center gap-2 text-sm font-bold text-white">
                           <TerminalSquare className="h-4 w-4 text-cyan-300" />
                           Follow-up console

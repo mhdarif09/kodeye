@@ -195,10 +195,10 @@ export function CodeAuditWorkspace({
         </div>
       </div>
 
-      <div className="grid min-h-[760px] lg:grid-cols-[48px_300px_minmax(0,1fr)_340px]">
+      <div className="grid min-h-[760px] xl:grid-cols-[48px_280px_minmax(560px,1fr)] 2xl:grid-cols-[48px_300px_minmax(640px,1fr)_360px]">
         <ActivityBar active={selectedFinding ? 'problems' : 'files'} />
 
-        <aside className="border-b border-white/10 bg-[#0a1322] lg:border-b-0 lg:border-r">
+        <aside className="border-b border-white/10 bg-[#0a1322] xl:border-b-0 xl:border-r">
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               Explorer
@@ -221,7 +221,7 @@ export function CodeAuditWorkspace({
           <div className="border-b border-white/10 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-600">
             Scan target
           </div>
-          <div className="max-h-[626px] space-y-1 overflow-auto p-3">
+          <div className="max-h-[360px] space-y-1 overflow-auto p-3 xl:max-h-[626px]">
             {displayFiles.map((file) => (
               <button
                 className={cn(
@@ -257,7 +257,7 @@ export function CodeAuditWorkspace({
           </div>
         </aside>
 
-        <main className="flex min-w-0 flex-col border-b border-white/10 bg-[#07111f] lg:border-b-0 lg:border-r">
+        <main className="flex min-w-0 flex-col border-b border-white/10 bg-[#07111f] 2xl:border-b-0 2xl:border-r">
           <div className="flex min-h-11 items-end gap-1 border-b border-white/10 bg-[#0a1322] px-3">
             <div className="flex max-w-full items-center gap-2 rounded-t-lg border-x border-t border-white/10 bg-[#07111f] px-3 py-2">
               <FileCode2 className="h-4 w-4 shrink-0 text-cyan-300" />
@@ -304,11 +304,11 @@ export function CodeAuditWorkspace({
           <TerminalPanel logs={logs} scan={scan} />
         </main>
 
-        <aside className="bg-[#0a1322]">
+        <aside className="bg-[#0a1322] xl:col-span-3 2xl:col-span-1">
           <div className="border-b border-white/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
             Inspector
           </div>
-          <div className="max-h-[708px] space-y-5 overflow-auto p-4">
+          <div className="grid max-h-none gap-4 overflow-visible p-4 lg:grid-cols-2 xl:grid-cols-3 2xl:block 2xl:max-h-[708px] 2xl:space-y-5 2xl:overflow-auto">
             <AiScanCoach
               findings={findings}
               logs={logs}
@@ -327,7 +327,7 @@ export function CodeAuditWorkspace({
               selectedFinding={selectedFinding}
               setQuestion={setAiQuestion}
             />
-            <div>
+            <div className="rounded-xl border border-white/10 bg-slate-950/40 p-3 2xl:border-0 2xl:bg-transparent 2xl:p-0">
               <div className="mb-3 flex items-center justify-between">
                 <p className="flex items-center gap-2 text-sm font-bold text-white">
                   <TerminalSquare className="h-4 w-4 text-cyan-300" />
@@ -345,7 +345,7 @@ export function CodeAuditWorkspace({
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 rounded-xl border border-white/10 bg-slate-950/40 p-3 2xl:border-0 2xl:bg-transparent 2xl:p-0">
               {scannerSteps.map((step) => {
                 const state = progress.states[step.key];
                 const Icon =
@@ -392,7 +392,7 @@ export function CodeAuditWorkspace({
               })}
             </div>
 
-            <div className="rounded-xl border border-white/10 bg-slate-950/50 p-3">
+            <div className="rounded-xl border border-white/10 bg-slate-950/50 p-3 lg:col-span-2 xl:col-span-1">
               <p className="flex items-center gap-2 text-sm font-bold text-white">
                 <ShieldAlert className="h-4 w-4 text-red-300" />
                 Findings in this file
@@ -432,7 +432,7 @@ export function CodeAuditWorkspace({
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-xs leading-5 text-slate-400">
+            <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-xs leading-5 text-slate-400 lg:col-span-2 xl:col-span-3 2xl:col-span-1">
               Source code is scanned in the temporary worker workspace. This UI
               shows masked evidence and finding context, not a persisted copy of
               the repository.
@@ -792,7 +792,7 @@ function FindingEditorView({
   return (
     <div>
       <div className="border-b border-white/10 bg-[#07111f] px-5 py-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <SeverityBadge severity={finding.severity} />
@@ -827,10 +827,10 @@ function FindingEditorView({
               {finding.description ?? 'No scanner description provided.'}
             </p>
           </div>
-          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+          <div className="flex flex-wrap gap-2 xl:shrink-0 xl:justify-end">
             {dirty ? (
               <button
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/5"
+                className="inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-white/10 px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/5"
                 onClick={() => setDraft(initialCode)}
                 type="button"
               >
@@ -838,7 +838,7 @@ function FindingEditorView({
               </button>
             ) : null}
             <button
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/5"
+              className="inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-white/10 px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/5"
               onClick={() => void onOpenSource(finding)}
               type="button"
             >
@@ -850,7 +850,7 @@ function FindingEditorView({
                   : 'Open source'}
             </button>
             <button
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-500"
+              className="inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-500"
               onClick={() => onAskAi(finding)}
               type="button"
             >
