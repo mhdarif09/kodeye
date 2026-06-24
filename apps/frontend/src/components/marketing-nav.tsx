@@ -1,23 +1,33 @@
 'use client';
 
-import { ChevronDown, ShieldCheck } from 'lucide-react';
+import { ChevronDown, MessageCircle, Send, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { services } from '../app/services/service-data';
+import { whatsappUrl } from '../lib/whatsapp';
 
-const navItems = [
-  { href: '/#product', label: 'Product' },
-  { href: '/#reviews', label: 'AI Reviews' },
-  { href: '/#services', label: 'Services' },
-  { href: '/#customers', label: 'Customers' },
-  { href: '/#pricing', label: 'Pricing' },
-  { href: '/blog', label: 'Blog' },
-];
+type MarketingLang = 'id' | 'en';
 
-export function MarketingNav() {
+interface MarketingNavProps {
+  lang?: MarketingLang;
+  onLangChange?: (lang: MarketingLang) => void;
+  whatsappHref?: string;
+}
+
+export function MarketingNav({
+  lang,
+  onLangChange,
+  whatsappHref = whatsappUrl(),
+}: MarketingNavProps) {
   const pathname = usePathname();
   const isServicesActive = pathname.startsWith('/services');
+  const navItems = [
+    { href: '/#work', label: 'Work' },
+    { href: '/#product', label: lang === 'en' ? 'Product' : 'Produk' },
+    { href: '/#process', label: lang === 'en' ? 'Process' : 'Proses' },
+    { href: '/blog', label: 'Blog' },
+  ];
 
   return (
     <nav className="sticky top-0 z-50 border-b border-slate-200/70 bg-[#f7f5ef]/90 backdrop-blur">
@@ -47,7 +57,8 @@ export function MarketingNav() {
               }
               href="/services"
             >
-              Services <ChevronDown className="h-4 w-4" />
+              {lang === 'en' ? 'Services' : 'Layanan'}{' '}
+              <ChevronDown className="h-4 w-4" />
             </Link>
             <div className="invisible absolute left-1/2 top-full z-50 mt-4 w-[28rem] -translate-x-1/2 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
               <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-900/10">
@@ -93,19 +104,47 @@ export function MarketingNav() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Link
-            className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-white sm:inline-flex"
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-950 sm:min-h-11 sm:px-4"
             href="/contact-sales"
           >
-            Contact sales
+            <Send className="h-4 w-4" />
+            <span className="hidden sm:inline">
+              {lang === 'en' ? 'Send Brief' : 'Kirim Brief'}
+            </span>
+            <span className="sm:hidden">
+              {lang === 'en' ? 'Brief' : 'Brief'}
+            </span>
           </Link>
-          <Link
-            className="rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
-            href="/register"
+          {lang && onLangChange ? (
+            <label className="sr-only" htmlFor="marketing-language">
+              Language
+            </label>
+          ) : null}
+          {lang && onLangChange ? (
+            <select
+              className="hidden min-h-10 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold uppercase text-slate-700 shadow-sm outline-none transition hover:border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 sm:inline-flex sm:min-h-11"
+              id="marketing-language"
+              onChange={(event) =>
+                onLangChange(event.target.value as MarketingLang)
+              }
+              value={lang}
+            >
+              <option value="id">ID</option>
+              <option value="en">EN</option>
+            </select>
+          ) : null}
+          <a
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-slate-950 px-3 py-2 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-slate-800 sm:min-h-11 sm:px-4"
+            href={whatsappHref}
           >
-            Try Kodeye
-          </Link>
+            <MessageCircle className="h-4 w-4" />
+            <span className="hidden sm:inline">
+              {lang === 'en' ? 'Consult' : 'Konsultasi'}
+            </span>
+            <span className="sm:hidden">WA</span>
+          </a>
         </div>
       </div>
     </nav>

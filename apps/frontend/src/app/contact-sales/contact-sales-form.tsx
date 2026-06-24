@@ -1,7 +1,14 @@
 'use client';
 
 import { type FormEvent, useMemo, useState } from 'react';
-import { ArrowRight, CheckCircle2, MessageSquareText } from 'lucide-react';
+import {
+  ArrowRight,
+  CheckCircle2,
+  MessageCircle,
+  MessageSquareText,
+  Send,
+  Sparkles,
+} from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 
 import { MarketingNav } from '../../components/marketing-nav';
@@ -11,6 +18,7 @@ import { Input } from '../../components/ui/input';
 import { Select } from '../../components/ui/select';
 import { salesApi } from '../../features/sales/api';
 import { getErrorMessage } from '../../lib/utils';
+import { whatsappUrl } from '../../lib/whatsapp';
 import { services } from '../services/service-data';
 
 const serviceOptions = [
@@ -60,6 +68,9 @@ export function ContactSalesForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const whatsappHref = whatsappUrl(
+    'Halo Kodeye, saya ingin konsultasi tentang kebutuhan sistem digital. Saya sedang membuka halaman contact sales dan ingin diskusi via WhatsApp.',
+  );
 
   const update = (key: keyof typeof form, value: string) =>
     setForm((current) => ({ ...current, [key]: value }));
@@ -123,9 +134,45 @@ export function ContactSalesForm() {
           </div>
 
           <form
-            className="rounded-xl border border-slate-200 bg-white p-5 shadow-soft sm:p-6"
+            className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-soft sm:p-6"
             onSubmit={(event) => void submit(event)}
           >
+            <div className="mb-6 rounded-2xl border border-slate-200 bg-[#f7f5ef] p-3 sm:p-4">
+              <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
+                <a
+                  className="group rounded-2xl bg-slate-950 p-5 text-white transition hover:-translate-y-0.5 hover:bg-slate-900"
+                  href={whatsappHref}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-slate-950">
+                      <MessageCircle className="h-5 w-5" />
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-slate-400 transition group-hover:translate-x-1 group-hover:text-white" />
+                  </div>
+                  <h2 className="mt-5 text-xl font-semibold tracking-tight">
+                    Chat WhatsApp
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    Konsultasi cepat dengan pesan otomatis yang sudah terisi.
+                  </p>
+                </a>
+                <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+                      <Send className="h-5 w-5" />
+                    </div>
+                    <Sparkles className="h-5 w-5 text-brand-500" />
+                  </div>
+                  <h2 className="mt-5 text-xl font-semibold tracking-tight">
+                    Kirim Form Brief
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Isi detail project agar kebutuhan bisa ditinjau lebih rapi.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <Input
                 id="sales-name"

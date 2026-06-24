@@ -3,7 +3,7 @@ export const siteUrl = normalizedSiteUrl();
 export const siteName = 'Kodeye';
 
 export const defaultSeoDescription =
-  'Kodeye is an AI-powered secure code review and engineering automation platform for code audits, scanner findings, AI fixes, DevOps, and digital operations.';
+  'Kodeye membantu bisnis membangun sistem digital modern melalui AI automation, web development, DevOps, infrastructure, code audit, dan produk SaaS.';
 
 export function absoluteUrl(path = '/') {
   return new URL(path, siteUrl).toString();
@@ -14,6 +14,6 @@ function normalizedSiteUrl() {
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.NEXT_PUBLIC_LANDING_URL ||
     process.env.APP_URL ||
-    'http://localhost:3000';
+    'https://kodeye.net';
   return value.endsWith('/') ? value : `${value}/`;
 }
