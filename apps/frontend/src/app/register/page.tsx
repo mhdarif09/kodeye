@@ -13,6 +13,7 @@ import { Input } from '../../components/ui/input';
 import { useAuth } from '../../features/auth/use-auth';
 import { getApiUrl } from '../../lib/api-client';
 import { isOnboardingCompleted } from '../../lib/auth-token';
+import { trackMetaEvent } from '../../lib/meta-events';
 import { getErrorMessage } from '../../lib/utils';
 
 export default function RegisterPage() {
@@ -34,6 +35,20 @@ export default function RegisterPage() {
     setIsSubmitting(true);
     try {
       await register(form);
+      trackMetaEvent('CompleteRegistration', {
+        customData: {
+          content_name: 'SaaS account registration',
+          registration_method: 'email',
+          status: 'submitted',
+        },
+        userData: {
+          email: form.email,
+          externalId: form.email,
+          firstName: form.name.split(' ')[0],
+          lastName: form.name.split(' ').slice(1).join(' '),
+          subscriptionId: form.email,
+        },
+      });
     } catch (caughtError) {
       setError(getErrorMessage(caughtError));
     } finally {

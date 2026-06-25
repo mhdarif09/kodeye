@@ -17,6 +17,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Select } from '../../components/ui/select';
 import { salesApi } from '../../features/sales/api';
+import { trackMetaEvent } from '../../lib/meta-events';
 import { getErrorMessage } from '../../lib/utils';
 import { whatsappUrl } from '../../lib/whatsapp';
 import { services } from '../services/service-data';
@@ -82,6 +83,22 @@ export function ContactSalesForm() {
     setSuccess(false);
     try {
       await salesApi.createInquiry({ ...form, source: 'contact-sales-page' });
+      trackMetaEvent('CompleteRegistration', {
+        customData: {
+          content_name: 'Contact sales brief',
+          lead_type: 'services_consultation',
+          service: form.service,
+          status: 'submitted',
+        },
+        userData: {
+          email: form.email,
+          externalId: form.email,
+          firstName: form.name.split(' ')[0],
+          lastName: form.name.split(' ').slice(1).join(' '),
+          phone: form.phone,
+          subscriptionId: form.email,
+        },
+      });
       setSuccess(true);
       setForm((current) => ({
         ...current,
@@ -142,6 +159,14 @@ export function ContactSalesForm() {
                 <a
                   className="group rounded-2xl bg-slate-950 p-5 text-white transition hover:-translate-y-0.5 hover:bg-slate-900"
                   href={whatsappHref}
+                  onClick={() =>
+                    trackMetaEvent('Contact', {
+                      customData: {
+                        contact_channel: 'whatsapp',
+                        content_name: 'Contact sales WhatsApp option',
+                      },
+                    })
+                  }
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-slate-950">

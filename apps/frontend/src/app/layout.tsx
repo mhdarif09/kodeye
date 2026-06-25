@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import { Suspense } from 'react';
 
 import '../styles/globals.css';
+import { MetaRouteEvents } from '../components/meta-route-events';
 import {
   absoluteUrl,
   defaultSeoDescription,
@@ -9,7 +11,7 @@ import {
   siteUrl,
 } from '../lib/seo';
 
-const metaPixelId = '1773905174059134';
+const metaPixelId = process.env.META_PIXEL_ID ?? '1775848800523906';
 
 export const metadata: Metadata = {
   alternates: {
@@ -85,6 +87,9 @@ export default function RootLayout({
             fbq('track', 'PageView');
           `}
         </Script>
+        <Suspense fallback={null}>
+          <MetaRouteEvents />
+        </Suspense>
         <noscript>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

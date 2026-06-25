@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { services } from '../app/services/service-data';
+import { trackMetaEvent } from '../lib/meta-events';
 import { whatsappUrl } from '../lib/whatsapp';
 
 type MarketingLang = 'id' | 'en';
@@ -138,6 +139,14 @@ export function MarketingNav({
           <a
             className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-slate-950 px-3 py-2 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-slate-800 sm:min-h-11 sm:px-4"
             href={whatsappHref}
+            onClick={() =>
+              trackMetaEvent('Contact', {
+                customData: {
+                  contact_channel: 'whatsapp',
+                  content_name: 'Marketing navbar consultation',
+                },
+              })
+            }
           >
             <MessageCircle className="h-4 w-4" />
             <span className="hidden sm:inline">

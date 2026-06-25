@@ -22,6 +22,7 @@ import { useEffect, useState } from 'react';
 import { MarketingNav } from '../components/marketing-nav';
 import { blogApi } from '../features/blog/api';
 import type { BlogPost } from '../features/blog/types';
+import { trackMetaEvent } from '../lib/meta-events';
 
 type Lang = 'id' | 'en';
 type IconComponent = typeof Workflow;
@@ -448,6 +449,14 @@ function HeroSection({
             <a
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-slate-800"
               href={whatsappHref}
+              onClick={() =>
+                trackMetaEvent('Contact', {
+                  customData: {
+                    contact_channel: 'whatsapp',
+                    content_name: 'Homepage hero consultation',
+                  },
+                })
+              }
             >
               <MessageCircle className="h-4 w-4" />
               {t.cta}
@@ -1183,6 +1192,14 @@ function FinalCta({
                   <a
                     className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
                     href={whatsappHref}
+                    onClick={() =>
+                      trackMetaEvent('Contact', {
+                        customData: {
+                          contact_channel: 'whatsapp',
+                          content_name: 'Homepage final CTA',
+                        },
+                      })
+                    }
                   >
                     <MessageCircle className="h-4 w-4" />
                     Chat WhatsApp
