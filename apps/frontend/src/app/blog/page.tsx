@@ -22,7 +22,10 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogPage() {
-  const posts = await getPublishedBlogPosts().catch(() => []);
+  const posts = await getPublishedBlogPosts().catch((error: unknown) => {
+    console.error('Unable to load blog posts', error);
+    return [];
+  });
 
   return (
     <main className="min-h-screen bg-[#f7f5ef] text-slate-950">

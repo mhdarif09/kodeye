@@ -17,9 +17,11 @@ import {
   Workflow,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { MarketingNav } from '../components/marketing-nav';
+import { blogApi } from '../features/blog/api';
+import type { BlogPost } from '../features/blog/types';
 
 type Lang = 'id' | 'en';
 type IconComponent = typeof Workflow;
@@ -38,6 +40,34 @@ export interface LandingBlogPost {
 interface LandingPageClientProps {
   posts: LandingBlogPost[];
   whatsappHref: string;
+}
+
+function toLandingBlogPost(post: BlogPost): LandingBlogPost {
+  return {
+    createdAt: post.createdAt ?? null,
+    displayDate: formatBlogDisplayDate(post.publishedAt ?? post.createdAt),
+    excerpt: post.excerpt ?? '',
+    id: String(post.id ?? post.slug ?? ''),
+    publishedAt: post.publishedAt ?? null,
+    slug: post.slug ?? '',
+    title: post.title ?? '',
+    updatedAt: post.updatedAt ?? null,
+  };
+}
+
+function formatBlogDisplayDate(value: string | null) {
+  if (!value) return '';
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return '';
+
+  return new Intl.DateTimeFormat('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    timeZone: 'UTC',
+    year: 'numeric',
+  }).format(date);
 }
 
 const copy = {
@@ -987,14 +1017,40 @@ function BlogSection({
   t: (typeof copy)[Lang];
 }) {
   const fallback = ['AI Automation', 'Web Development', 'Code Audit'];
+  const [previewPosts, setPreviewPosts] = useState(posts);
+
+  useEffect(() => {
+    setPreviewPosts(posts);
+  }, [posts]);
+
+  useEffect(() => {
+    if (posts.length > 0) return;
+
+    let active = true;
+
+    void blogApi
+      .listPublished()
+      .then((nextPosts) => {
+        if (!active) return;
+        setPreviewPosts(nextPosts.slice(0, 3).map(toLandingBlogPost));
+      })
+      .catch(() => {
+        if (!active) return;
+        setPreviewPosts([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [posts.length]);
 
   return (
     <section className="bg-[#f7f5ef] px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <SectionHeader eyebrow="Blog" title={t.blogTitle} />
         <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {posts.length > 0
-            ? posts.slice(0, 3).map((post) => (
+          {previewPosts.length > 0
+            ? previewPosts.slice(0, 3).map((post) => (
                 <article
                   className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-soft"
                   key={post.id}

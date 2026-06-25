@@ -13,7 +13,7 @@ export async function getPublishedBlogPost(slug: string): Promise<BlogPost> {
 async function fetchBlog<T>(path: string): Promise<T> {
   const response = await fetch(getApiUrl(path), {
     headers: { Accept: 'application/json' },
-    next: { revalidate: 300 },
+    next: { revalidate: 30 },
   });
   if (!response.ok) {
     throw new Error(`Blog API returned ${response.status}`);

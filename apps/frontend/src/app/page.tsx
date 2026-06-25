@@ -65,7 +65,10 @@ function toDisplayDate(value: unknown): string {
 }
 
 export default async function HomePage() {
-  const rawPosts = await getPublishedBlogPosts().catch(() => []);
+  const rawPosts = await getPublishedBlogPosts().catch((error: unknown) => {
+    console.error('Unable to load homepage blog posts', error);
+    return [];
+  });
 
   const posts: LandingBlogPost[] = rawPosts
     .slice(0, 3)
