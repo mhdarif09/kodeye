@@ -130,7 +130,7 @@ export default function AdminPortfolioPage() {
         </Button>
       </div>
 
-      {error ? <Alert tone="critical">{error}</Alert> : null}
+      {error ? <Alert tone="error">{error}</Alert> : null}
 
       <Card>
         <div className="overflow-x-auto">
@@ -217,7 +217,7 @@ export default function AdminPortfolioPage() {
         title={editing ? 'Edit project card' : 'New project card'}
       >
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {error ? <Alert tone="critical">{error}</Alert> : null}
+          {error ? <Alert tone="error">{error}</Alert> : null}
           <div className="grid gap-4 md:grid-cols-2">
             <Input
               id="project-title"

@@ -181,7 +181,7 @@ export default function AdminTeamPage() {
         </div>
       </Card>
 
-      <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} title={editing ? 'Edit Member' : 'Tambah Member'}>
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editing ? 'Edit Member' : 'Tambah Member'}>
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>

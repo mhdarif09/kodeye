@@ -169,7 +169,7 @@ export default function AdminPartnersPage() {
         </div>
       </Card>
 
-      <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} title={editing ? 'Edit Klien' : 'Tambah Klien'}>
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editing ? 'Edit Klien' : 'Tambah Klien'}>
         <form onSubmit={handleSave} className="space-y-4">
           <div>
             <label className="text-xs font-bold text-slate-700 block mb-1">Nama Perusahaan</label>
