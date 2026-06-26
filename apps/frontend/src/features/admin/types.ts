@@ -1,13 +1,6 @@
 export type SettingCategory =
   | 'APP'
-  | 'GITHUB'
-  | 'MIDTRANS'
-  | 'PAYPAL'
   | 'BILLING'
-  | 'CURRENCY'
-  | 'SCANNER'
-  | 'REPORT'
-  | 'INVOICE'
   | 'SECURITY';
 
 export interface AdminSetting {
@@ -46,31 +39,23 @@ export interface AdminAuditLog {
   actor: { name: string; email: string } | null;
 }
 
+export interface SalesInquirySummary {
+  id: string;
+  name: string;
+  email: string;
+  companyName: string;
+  service: string;
+  status: string;
+  createdAt: string;
+}
+
 export interface AdminDashboardSummary {
   totalUsers: number;
-  totalOrganizations: number;
-  totalRepositories: number;
-  totalScanJobs: number;
-  totalFindings: number;
-  activeSubscriptions: number;
-  monthlyRevenue: { currencyCode: string; totalAmount: number };
-  providerStatus: Record<string, boolean>;
+  totalProjects: number;
+  totalBlogPosts: number;
+  totalSalesInquiries: number;
   recentAuditLogs: AdminAuditLog[];
-  recentPayments: {
-    id: string;
-    provider: string;
-    status: string;
-    currencyCode: string;
-    totalAmount: number;
-    createdAt: string;
-  }[];
-  recentScans: {
-    id: string;
-    status: string;
-    totalFindings: number;
-    createdAt: string;
-    repository: { name: string };
-  }[];
+  recentInquiries: SalesInquirySummary[];
 }
 
 export type AdminUserRole = 'USER' | 'ADMIN';
@@ -86,9 +71,4 @@ export interface AdminUser {
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
-  _count: {
-    memberships: number;
-    ownedOrganizations: number;
-    triggeredScanJobs: number;
-  };
 }

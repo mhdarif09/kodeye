@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Activity,
   FileText,
   FolderGit2,
   KeyRound,
@@ -15,7 +14,6 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 
-import { Badge } from '../../../components/ui/badge';
 import { Card } from '../../../components/ui/card';
 import { Spinner } from '../../../components/ui/spinner';
 import { adminApi } from '../../../features/admin/api';
@@ -45,26 +43,30 @@ export default function AdminDashboardPage() {
 
   const stats: { icon: LucideIcon; label: string; value: number }[] = summary
     ? [
-        { icon: UsersRound, label: 'Users', value: summary.totalUsers },
+        { icon: UsersRound, label: 'Admin Users', value: summary.totalUsers },
         {
-          icon: ShieldCheck,
-          label: 'Repositories',
-          value: summary.totalRepositories,
+          icon: FolderGit2,
+          label: 'Portfolio Projects',
+          value: summary.totalProjects,
         },
-        { icon: Activity, label: 'Scans', value: summary.totalScanJobs },
+        { icon: FileText, label: 'Blog Posts', value: summary.totalBlogPosts },
+        {
+          icon: MessageSquareText,
+          label: 'Sales Inquiries',
+          value: summary.totalSalesInquiries,
+        },
       ]
     : [];
 
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-sm font-semibold text-brand-600">Admin</p>
+        <p className="text-sm font-semibold text-brand-600">Admin Console</p>
         <h1 className="mt-2 text-3xl font-bold text-slate-950">
-          Admin console
+          Agency CMS Dashboard Hub
         </h1>
         <p className="mt-3 text-sm text-slate-500">
-          System overview, provider status, recent scans, payments, and audit
-          activity.
+          Kelola seluruh konten website agensi Kodeye: portofolio proyek, artikel blog, profil tim, klien mitra, dan pesan masuk.
         </p>
       </div>
       {error ? <Card className="text-red-600">{error}</Card> : null}
@@ -74,49 +76,49 @@ export default function AdminDashboardPage() {
             href: '/dashboard/admin/portfolio',
             icon: FolderGit2,
             label: 'Our Projects',
-            text: 'Manage portfolio project cards on the homepage.',
+            text: 'Kelola kartu proyek portofolio yang tampil di halaman utama.',
           },
           {
             href: '/dashboard/admin/sales-inquiries',
             icon: MessageSquareText,
-            label: 'Sales inbox',
-            text: 'Review contact sales messages and update lead status.',
-          },
-          {
-            href: '/dashboard/admin/users',
-            icon: UsersRound,
-            label: 'Users',
-            text: 'Roles, suspensions, reactivation, and account controls.',
-          },
-          {
-            href: '/dashboard/admin/settings',
-            icon: KeyRound,
-            label: 'Settings',
-            text: 'Runtime provider keys, app settings, and checks.',
-          },
-          {
-            href: '/dashboard/admin/audit-logs',
-            icon: ListChecks,
-            label: 'Audit logs',
-            text: 'Track admin changes and sensitive operations.',
+            label: 'Sales Inbox',
+            text: 'Lihat pesan prospek dari form WhatsApp/Contact Sales.',
           },
           {
             href: '/dashboard/admin/blog',
             icon: FileText,
-            label: 'Blog',
-            text: 'Create, update, publish, unpublish, and delete blog posts.',
+            label: 'Blog CMS',
+            text: 'Tulis, edit, dan terbitkan artikel edukasi AI & Digital.',
           },
           {
             href: '/dashboard/admin/team',
             icon: UsersRound,
             label: 'Our Team',
-            text: 'Manage team member profiles, photos, and social links.',
+            text: 'Kelola profil anggota tim teknis, foto, dan link sosial.',
           },
           {
             href: '/dashboard/admin/partners',
             icon: ShieldCheck,
             label: 'Trusted Partners',
-            text: 'Manage trusted company client logos and names.',
+            text: 'Kelola logo perusahaan klien yang memercayai Kodeye.',
+          },
+          {
+            href: '/dashboard/admin/users',
+            icon: UsersRound,
+            label: 'Admin Users',
+            text: 'Kelola hak akses dan akun administrator sistem.',
+          },
+          {
+            href: '/dashboard/admin/settings',
+            icon: KeyRound,
+            label: 'System Settings',
+            text: 'Konfigurasi parameter aplikasi dan kunci keamanan.',
+          },
+          {
+            href: '/dashboard/admin/audit-logs',
+            icon: ListChecks,
+            label: 'Audit Logs',
+            text: 'Pantau jejak aktivitas perubahan oleh para admin.',
           },
         ].map(({ href, icon: Icon, label, text }) => (
           <Link
@@ -139,38 +141,34 @@ export default function AdminDashboardPage() {
           </Card>
         ))}
       </div>
-      <Card>
-        <h2 className="font-bold text-slate-950">Provider status</h2>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {Object.entries(summary?.providerStatus ?? {}).map(([key, ok]) => (
-            <Badge key={key} tone={ok ? 'success' : 'warning'}>
-              {key}: {ok ? 'configured' : 'missing'}
-            </Badge>
-          ))}
-        </div>
-      </Card>
       <div className="grid gap-5 lg:grid-cols-2">
         <Card>
-          <h2 className="font-bold text-slate-950">Recent scans</h2>
+          <h2 className="font-bold text-slate-950">Recent Sales Inquiries</h2>
           <div className="mt-4 space-y-3">
-            {summary?.recentScans.map((scan) => (
-              <div className="rounded-xl bg-slate-50 p-3 text-sm" key={scan.id}>
-                <div className="font-semibold">{scan.repository.name}</div>
-                <div className="text-slate-500">
-                  {scan.status} - {scan.totalFindings} findings
+            {summary?.recentInquiries.map((inq) => (
+              <div className="rounded-xl bg-slate-50 p-3 text-sm" key={inq.id}>
+                <div className="flex justify-between font-semibold text-slate-900">
+                  <span>{inq.name} ({inq.companyName})</span>
+                  <span className="text-xs text-brand-600 uppercase">{inq.status}</span>
+                </div>
+                <div className="mt-1 text-xs text-slate-500">
+                  {inq.service} - {inq.email}
                 </div>
               </div>
             ))}
+            {summary?.recentInquiries.length === 0 ? (
+              <p className="text-xs text-slate-400">Belum ada pesan masuk.</p>
+            ) : null}
           </div>
         </Card>
         <Card>
-          <h2 className="font-bold text-slate-950">Recent audit logs</h2>
+          <h2 className="font-bold text-slate-950">Recent Audit Logs</h2>
           <div className="mt-4 space-y-3">
             {summary?.recentAuditLogs.map((log) => (
               <div className="rounded-xl bg-slate-50 p-3 text-sm" key={log.id}>
-                <div className="font-semibold">{log.action}</div>
-                <div className="text-slate-500">
-                  {log.resourceKey ?? log.resourceType} -{' '}
+                <div className="font-semibold text-slate-900">{log.action}</div>
+                <div className="mt-1 text-xs text-slate-500">
+                  {log.resourceKey ?? log.resourceType} —{' '}
                   {log.actor?.email ?? 'system'}
                 </div>
               </div>

@@ -10,13 +10,6 @@ import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import type { AdminUsersQueryDto } from '../dto/admin-users-query.dto';
 
 const adminUserSelect = {
-  _count: {
-    select: {
-      memberships: true,
-      ownedOrganizations: true,
-      triggeredScanJobs: true,
-    },
-  },
   createdAt: true,
   deletedAt: true,
   email: true,

@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { OrganizationRole, Prisma, UserRole, UserStatus } from '@prisma/client';
+import { Prisma, UserRole, UserStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 import { PrismaService } from '../infrastructure/prisma/prisma.service';
@@ -29,31 +29,14 @@ export class AuthService {
     );
 
     try {
-      const user = await this.prisma.$transaction(async (transaction) => {
-        const createdUser = await transaction.user.create({
-          data: {
-            email: normalizedEmail,
-            name: dto.name.trim(),
-            passwordHash,
-            role: UserRole.USER,
-          },
-          select: publicUserSelect,
-        });
-
-        await transaction.organization.create({
-          data: {
-            name: `${createdUser.name}'s Organization`,
-            ownerUserId: createdUser.id,
-            members: {
-              create: {
-                role: OrganizationRole.OWNER,
-                userId: createdUser.id,
-              },
-            },
-          },
-        });
-
-        return createdUser;
+      const user = await this.prisma.user.create({
+        data: {
+          email: normalizedEmail,
+          name: dto.name.trim(),
+          passwordHash,
+          role: UserRole.ADMIN,
+        },
+        select: publicUserSelect,
       });
 
       return this.createAuthResult(user);
@@ -96,29 +79,10 @@ export class AuthService {
       role: user.role,
       sub: user.id,
     });
-    const [githubInstallationCount, ownedOrganization] = await Promise.all([
-      this.prisma.gitHubInstallation.count({
-        where: {
-          organization: {
-            OR: [
-              { ownerUserId: user.id },
-              { members: { some: { userId: user.id } } },
-            ],
-          },
-        },
-      }),
-      this.prisma.organization.findFirst({
-        orderBy: { createdAt: 'desc' },
-        select: { id: true },
-        where: { ownerUserId: user.id },
-      }),
-    ]);
 
     return {
       accessToken,
-      authSource: 'email',
-      githubInstallOrganizationId:
-        githubInstallationCount === 0 ? ownedOrganization?.id : undefined,
+      authSource: 'email' as const,
       user,
     };
   }
