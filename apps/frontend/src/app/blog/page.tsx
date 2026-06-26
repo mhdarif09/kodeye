@@ -96,7 +96,7 @@ export default async function BlogPage() {
       <section className="py-16 px-6 lg:px-12 relative z-10">
         <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {posts.map((post, idx) => {
-            const postRecord = post as Record<string, string>;
+            const postRecord = post as unknown as Record<string, string>;
             const dateDisplay = formatDateStr(post.publishedAt || postRecord.createdAt);
             const categoryTag = postRecord.category || 'Tech Insight';
 

@@ -177,7 +177,7 @@ Penerapan strategi indexing basis data yang presisi dikombinasikan dengan lapisa
                 Kodeye Insight
               </span>
               <span className="flex items-center gap-1.5 text-xs font-mono text-text-secondary">
-                <CalendarDays className="h-3.5 w-3.5 text-primary" /> {formatDateStr(post.publishedAt || (post as Record<string, string>).createdAt)}
+                <CalendarDays className="h-3.5 w-3.5 text-primary" /> {formatDateStr(post.publishedAt || (post as unknown as Record<string, string>).createdAt)}
               </span>
             </div>
 
