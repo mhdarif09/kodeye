@@ -148,10 +148,10 @@ export default function AdminPartnersPage() {
                     </span>
                   </td>
                   <td className="p-4 text-right space-x-2">
-                    <Button variant="secondary" size="sm" onClick={() => openEdit(item)}>
+                    <Button variant="secondary" className="min-h-8 px-3 py-1.5 text-xs" onClick={() => openEdit(item)}>
                       Edit
                     </Button>
-                    <Button variant="danger" size="sm" onClick={() => handleDelete(item.id)}>
+                    <Button variant="danger" className="min-h-8 px-3 py-1.5 text-xs" onClick={() => handleDelete(item.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </td>

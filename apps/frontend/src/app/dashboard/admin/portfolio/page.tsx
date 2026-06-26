@@ -181,14 +181,14 @@ export default function AdminPortfolioPage() {
                   <td className="py-4 text-right space-x-2">
                     <Button
                       onClick={() => openEdit(project)}
-                      size="sm"
+                      className="min-h-8 px-3 py-1.5 text-xs"
                       variant="secondary"
                     >
                       Edit
                     </Button>
                     <Button
                       onClick={() => handleDelete(project.id)}
-                      size="sm"
+                      className="min-h-8 px-3 py-1.5 text-xs"
                       variant="secondary"
                     >
                       <Trash2 className="h-4 w-4 text-red-600" />
