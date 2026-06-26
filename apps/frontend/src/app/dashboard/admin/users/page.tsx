@@ -151,10 +151,6 @@ export default function AdminUsersPage() {
                 {item.name}
               </p>
               <p className="truncate text-slate-500">{item.email}</p>
-              <p className="mt-1 text-xs text-slate-400">
-                {item._count.ownedOrganizations} orgs owned |{' '}
-                {item._count.triggeredScanJobs} scans
-              </p>
             </div>
             <div>
               <Select

@@ -1,6 +1,13 @@
 export type SettingCategory =
   | 'APP'
+  | 'GITHUB'
+  | 'MIDTRANS'
+  | 'PAYPAL'
   | 'BILLING'
+  | 'CURRENCY'
+  | 'SCANNER'
+  | 'REPORT'
+  | 'INVOICE'
   | 'SECURITY';
 
 export interface AdminSetting {
