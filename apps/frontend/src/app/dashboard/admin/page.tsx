@@ -52,11 +52,6 @@ export default function AdminDashboardPage() {
           value: summary.totalRepositories,
         },
         { icon: Activity, label: 'Scans', value: summary.totalScanJobs },
-        {
-          icon: CreditCard,
-          label: 'Paid IDR',
-          value: summary.monthlyRevenue.totalAmount,
-        },
       ]
     : [];
 
