@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     background_color: '#f7f5ef',
     description:
-      'AI automation, web development, DevOps, infrastructure, code audit, and SaaS products by Kodeye.',
+      'AI automation, web development, DevOps, infrastructure, and code audit by Kodeye.',
     display: 'standalone',
     icons: [],
     name: 'Kodeye',

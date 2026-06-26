@@ -1,12 +1,10 @@
 'use client';
 
-import { ChevronDown, MessageCircle, Send, ShieldCheck } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-
-import { services } from '../app/services/service-data';
-import { trackMetaEvent } from '../lib/meta-events';
-import { whatsappUrl } from '../lib/whatsapp';
+import { useEffect, useState } from 'react';
 
 type MarketingLang = 'id' | 'en';
 
@@ -16,146 +14,109 @@ interface MarketingNavProps {
   whatsappHref?: string;
 }
 
-export function MarketingNav({
-  lang,
-  onLangChange,
-  whatsappHref = whatsappUrl(),
-}: MarketingNavProps) {
+export function MarketingNav({ whatsappHref = '#' }: MarketingNavProps) {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
-  const isServicesActive = pathname.startsWith('/services');
+  const isHome = pathname === '/';
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const navItems = [
-    { href: '/#work', label: 'Work' },
-    { href: '/#product', label: lang === 'en' ? 'Product' : 'Produk' },
-    { href: '/#process', label: lang === 'en' ? 'Process' : 'Proses' },
-    { href: '/blog', label: 'Blog' },
+    { label: 'Home', href: '/', active: isHome },
+    { label: 'Services', href: '/services', active: Boolean(pathname?.startsWith('/services')) },
+    { label: 'Portfolio', href: '/portfolio', active: Boolean(pathname?.startsWith('/portfolio')) },
+    { label: 'About', href: '/about', active: Boolean(pathname?.startsWith('/about')) },
+    { label: 'Blog', href: isHome ? '#blog' : '/blog', active: Boolean(pathname?.startsWith('/blog')) },
+    { label: 'Contact', href: isHome ? '#contact' : '/#contact', active: false },
   ];
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-slate-200/70 bg-[#f7f5ef]/90 backdrop-blur">
-      <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <Link className="flex items-center gap-2 text-lg font-bold" href="/">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-950 text-white">
-            <ShieldCheck className="h-5 w-5" />
-          </span>
-          Kodeye
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled ? 'bg-[#0A0A0A]/95 backdrop-blur-md border-b border-white/[0.06]' : 'bg-transparent'
+      }`}
+    >
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-12">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-3">
+          <Image
+            src="/kodeye-logo.png"
+            alt="Kodeye Logo"
+            width={38}
+            height={38}
+            className="object-contain"
+          />
+          <span className="text-2xl font-bold tracking-tight text-white">Kodeye</span>
         </Link>
-        <div className="hidden items-center gap-7 lg:flex">
+
+        {/* Center Nav Links */}
+        <div className="hidden md:flex items-center gap-8">
           {navItems.map((item) => (
             <Link
-              className="text-sm font-semibold text-slate-600 transition hover:text-slate-950"
+              key={item.label}
               href={item.href}
-              key={item.href}
+              className={`text-sm tracking-wide transition-colors ${
+                item.active
+                  ? 'text-primary font-semibold border-b-2 border-primary pb-1.5'
+                  : 'text-text-secondary hover:text-white font-medium'
+              }`}
             >
               {item.label}
             </Link>
           ))}
-          <div className="group relative">
-            <Link
-              className={
-                isServicesActive
-                  ? 'inline-flex items-center gap-1 text-sm font-semibold text-slate-950 transition'
-                  : 'inline-flex items-center gap-1 text-sm font-semibold text-slate-600 transition hover:text-slate-950'
-              }
-              href="/services"
-            >
-              {lang === 'en' ? 'Services' : 'Layanan'}{' '}
-              <ChevronDown className="h-4 w-4" />
-            </Link>
-            <div className="invisible absolute left-1/2 top-full z-50 mt-4 w-[28rem] -translate-x-1/2 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-              <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-900/10">
-                <Link
-                  className="block rounded-lg px-4 py-3 text-sm font-semibold text-slate-950 hover:bg-slate-50"
-                  href="/services"
-                >
-                  All Services
-                </Link>
-                <div className="mt-1 grid gap-1">
-                  {services.map((service) => (
-                    <Link
-                      className={
-                        pathname === service.href
-                          ? 'rounded-lg bg-slate-950 px-4 py-3 text-white transition'
-                          : 'rounded-lg px-4 py-3 transition hover:bg-slate-50'
-                      }
-                      href={service.href}
-                      key={service.slug}
-                    >
-                      <span
-                        className={
-                          pathname === service.href
-                            ? 'block text-sm font-semibold text-white'
-                            : 'block text-sm font-semibold text-slate-950'
-                        }
-                      >
-                        {service.title}
-                      </span>
-                      <span
-                        className={
-                          pathname === service.href
-                            ? 'mt-1 line-clamp-2 block text-xs leading-5 text-slate-300'
-                            : 'mt-1 line-clamp-2 block text-xs leading-5 text-slate-500'
-                        }
-                      >
-                        {service.description}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <Link
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-950 sm:min-h-11 sm:px-4"
-            href="/contact-sales"
-          >
-            <Send className="h-4 w-4" />
-            <span className="hidden sm:inline">
-              {lang === 'en' ? 'Send Brief' : 'Kirim Brief'}
-            </span>
-            <span className="sm:hidden">
-              {lang === 'en' ? 'Brief' : 'Brief'}
-            </span>
-          </Link>
-          {lang && onLangChange ? (
-            <label className="sr-only" htmlFor="marketing-language">
-              Language
-            </label>
-          ) : null}
-          {lang && onLangChange ? (
-            <select
-              className="hidden min-h-10 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold uppercase text-slate-700 shadow-sm outline-none transition hover:border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 sm:inline-flex sm:min-h-11"
-              id="marketing-language"
-              onChange={(event) =>
-                onLangChange(event.target.value as MarketingLang)
-              }
-              value={lang}
-            >
-              <option value="id">ID</option>
-              <option value="en">EN</option>
-            </select>
-          ) : null}
+
+        {/* Right Button */}
+        <div className="hidden md:flex items-center">
           <a
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-slate-950 px-3 py-2 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-slate-800 sm:min-h-11 sm:px-4"
             href={whatsappHref}
-            onClick={() =>
-              trackMetaEvent('Contact', {
-                customData: {
-                  contact_channel: 'whatsapp',
-                  content_name: 'Marketing navbar consultation',
-                },
-              })
-            }
+            className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-glow transition hover:bg-secondary hover:text-black"
           >
-            <MessageCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">
-              {lang === 'en' ? 'Consult' : 'Konsultasi'}
-            </span>
-            <span className="sm:hidden">WA</span>
+            Get in Touch
           </a>
         </div>
+
+        {/* Mobile Hamburger */}
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="md:hidden text-text-secondary hover:text-white p-2"
+          aria-label="Toggle menu"
+        >
+          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileOpen && (
+        <div className="md:hidden border-b border-white/10 bg-[#111111] px-6 py-6 space-y-4">
+          {navItems.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              onClick={() => setMobileOpen(false)}
+              className={`block text-base ${
+                item.active ? 'text-primary font-bold' : 'text-text-secondary font-medium'
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
+          <div className="pt-2">
+            <a
+              href={whatsappHref}
+              onClick={() => setMobileOpen(false)}
+              className="block text-center rounded-full bg-primary py-3 text-sm font-semibold text-white"
+            >
+              Get in Touch
+            </a>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

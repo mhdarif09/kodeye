@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   Plug,
   Settings,
-  CreditCard,
   Shield,
   ShieldCheck,
   SquareCode,
@@ -23,7 +22,6 @@ export const dashboardNavigation = [
   },
   { href: '/dashboard/scans', label: 'Scans', icon: ShieldCheck },
   { href: '/dashboard/integrations', label: 'Integrations', icon: Plug },
-  { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
   { href: '/dashboard/admin', label: 'Admin', icon: Shield },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ];

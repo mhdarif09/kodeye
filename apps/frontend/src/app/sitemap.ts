@@ -4,7 +4,7 @@ import { getPublishedBlogPosts } from '../features/blog/server';
 import { services } from './services/service-data';
 import { absoluteUrl } from '../lib/seo';
 
-const publicRoutes = ['/', '/services', '/pricing', '/contact-sales', '/blog'];
+const publicRoutes = ['/', '/services', '/portfolio', '/about', '/blog'];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();

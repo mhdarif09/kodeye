@@ -3,11 +3,11 @@ import type { ApiSuccessResponse } from '../../types/api';
 import type { BlogPost } from './types';
 
 export async function getPublishedBlogPosts(): Promise<BlogPost[]> {
-  return fetchBlog<BlogPost[]>('/blog/posts');
+  return fetchBlog<BlogPost[]>('/blog/posts').catch(() => []);
 }
 
-export async function getPublishedBlogPost(slug: string): Promise<BlogPost> {
-  return fetchBlog<BlogPost>(`/blog/posts/${encodeURIComponent(slug)}`);
+export async function getPublishedBlogPost(slug: string): Promise<BlogPost | null> {
+  return fetchBlog<BlogPost>(`/blog/posts/${encodeURIComponent(slug)}`).catch(() => null);
 }
 
 async function fetchBlog<T>(path: string): Promise<T> {

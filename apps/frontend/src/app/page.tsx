@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 
 import { getPublishedBlogPosts } from '../features/blog/server';
 import type { BlogPost } from '../features/blog/types';
+import { getPublishedTrustedCompanies } from '../features/partners/server';
+import { getPublishedPortfolioProjects } from '../features/portfolio/server';
 import { absoluteUrl, defaultSeoDescription } from '../lib/seo';
 import { whatsappUrl } from '../lib/whatsapp';
 import LandingPageClient, { type LandingBlogPost } from './landing-page-client';
@@ -11,7 +13,7 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   description:
-    'Kodeye membantu bisnis membangun sistem digital modern melalui AI automation, web development, DevOps, infrastructure, code audit, dan produk SaaS.',
+    'Kodeye membantu bisnis membangun sistem digital modern melalui AI automation, web development, DevOps, infrastructure, dan code audit.',
   keywords: [
     'jasa AI automation Indonesia',
     'jasa web development Indonesia',
@@ -26,7 +28,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     description:
-      'Kodeye membantu bisnis membangun sistem digital modern melalui AI automation, web development, DevOps, infrastructure, code audit, dan produk SaaS.',
+      'Kodeye membantu bisnis membangun sistem digital modern melalui AI automation, web development, DevOps, infrastructure, dan code audit.',
     siteName: 'Kodeye',
     title: 'Kodeye - AI Automation, Web Development, DevOps & Code Audit',
     type: 'website',
@@ -65,10 +67,11 @@ function toDisplayDate(value: unknown): string {
 }
 
 export default async function HomePage() {
-  const rawPosts = await getPublishedBlogPosts().catch((error: unknown) => {
-    console.error('Unable to load homepage blog posts', error);
-    return [];
-  });
+  const [rawPosts, projects, partners] = await Promise.all([
+    getPublishedBlogPosts(),
+    getPublishedPortfolioProjects(),
+    getPublishedTrustedCompanies(),
+  ]);
 
   const posts: LandingBlogPost[] = rawPosts
     .slice(0, 3)
@@ -102,7 +105,7 @@ export default async function HomePage() {
         }}
       />
 
-      <LandingPageClient posts={posts} whatsappHref={whatsappHref} />
+      <LandingPageClient partners={partners} posts={posts} projects={projects} whatsappHref={whatsappHref} />
     </>
   );
 }

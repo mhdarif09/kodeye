@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Activity,
-  CreditCard,
   FileText,
+  FolderGit2,
   KeyRound,
   ListChecks,
   MessageSquareText,
@@ -73,19 +73,19 @@ export default function AdminDashboardPage() {
         </p>
       </div>
       {error ? <Card className="text-red-600">{error}</Card> : null}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {[
+          {
+            href: '/dashboard/admin/portfolio',
+            icon: FolderGit2,
+            label: 'Our Projects',
+            text: 'Manage portfolio project cards on the homepage.',
+          },
           {
             href: '/dashboard/admin/sales-inquiries',
             icon: MessageSquareText,
             label: 'Sales inbox',
             text: 'Review contact sales messages and update lead status.',
-          },
-          {
-            href: '/dashboard/admin/billing',
-            icon: CreditCard,
-            label: 'Billing',
-            text: 'Plans, prices, currencies, and billing settings.',
           },
           {
             href: '/dashboard/admin/users',
@@ -110,6 +110,18 @@ export default function AdminDashboardPage() {
             icon: FileText,
             label: 'Blog',
             text: 'Create, update, publish, unpublish, and delete blog posts.',
+          },
+          {
+            href: '/dashboard/admin/team',
+            icon: UsersRound,
+            label: 'Our Team',
+            text: 'Manage team member profiles, photos, and social links.',
+          },
+          {
+            href: '/dashboard/admin/partners',
+            icon: ShieldCheck,
+            label: 'Trusted Partners',
+            text: 'Manage trusted company client logos and names.',
           },
         ].map(({ href, icon: Icon, label, text }) => (
           <Link

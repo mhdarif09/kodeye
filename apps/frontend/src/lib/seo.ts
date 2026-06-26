@@ -3,7 +3,7 @@ export const siteUrl = normalizedSiteUrl();
 export const siteName = 'Kodeye';
 
 export const defaultSeoDescription =
-  'Kodeye membantu bisnis membangun sistem digital modern melalui AI automation, web development, DevOps, infrastructure, code audit, dan produk SaaS.';
+  'Kodeye membantu bisnis membangun sistem digital modern melalui AI automation, web development, DevOps, infrastructure, dan code audit.';
 
 export function absoluteUrl(path = '/') {
   return new URL(path, siteUrl).toString();

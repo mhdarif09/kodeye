@@ -849,3 +849,51 @@ model SalesInquiry {
   @@index([service])
   @@map("sales_inquiries")
 }
+
+model PortfolioProject {
+  id          String   @id @default(cuid())
+  title       String   @db.VarChar(255)
+  subtitle    String   @db.VarChar(255)
+  category    String   @default("Website Development") @db.VarChar(100)
+  imageUrl    String   @map("image_url") @db.VarChar(2048)
+  projectUrl  String?  @map("project_url") @db.VarChar(2048)
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive, sortOrder])
+  @@map("portfolio_projects")
+}
+
+model TeamMember {
+  id           String   @id @default(cuid())
+  name         String   @db.VarChar(255)
+  role         String   @db.VarChar(255)
+  description  String   @db.Text
+  photoUrl     String   @map("photo_url") @db.VarChar(2048)
+  linkedinUrl  String?  @map("linkedin_url") @db.VarChar(2048)
+  githubUrl    String?  @map("github_url") @db.VarChar(2048)
+  instagramUrl String?  @map("instagram_url") @db.VarChar(2048)
+  sortOrder    Int      @default(0) @map("sort_order")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive, sortOrder])
+  @@map("team_members")
+}
+
+model TrustedCompany {
+  id         String   @id @default(cuid())
+  name       String   @db.VarChar(255)
+  logoUrl    String   @map("logo_url") @db.VarChar(2048)
+  websiteUrl String?  @map("website_url") @db.VarChar(2048)
+  sortOrder  Int      @default(0) @map("sort_order")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive, sortOrder])
+  @@map("trusted_companies")
+}

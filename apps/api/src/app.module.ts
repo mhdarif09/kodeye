@@ -19,6 +19,9 @@ import { AiModule } from './ai/ai.module';
 import { SalesModule } from './sales/sales.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
 import { BlogModule } from './blog/blog.module';
+import { PortfolioModule } from './portfolio/portfolio.module';
+import { TeamModule } from './team/team.module';
+import { PartnerModule } from './partners/partners.module';
 
 @Module({
   imports: [
@@ -44,6 +47,9 @@ import { BlogModule } from './blog/blog.module';
     SalesModule,
     WorkspacesModule,
     BlogModule,
+    PortfolioModule,
+    TeamModule,
+    PartnerModule,
   ],
 })
 export class AppModule {}
