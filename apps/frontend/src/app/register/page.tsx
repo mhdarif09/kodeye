@@ -1,6 +1,6 @@
 'use client';
 
-import { Eye, EyeOff, Github } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useEffect, useState } from 'react';
@@ -11,9 +11,6 @@ import { Alert } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { useAuth } from '../../features/auth/use-auth';
-import { getApiUrl } from '../../lib/api-client';
-import { isOnboardingCompleted } from '../../lib/auth-token';
-import { trackMetaEvent } from '../../lib/meta-events';
 import { getErrorMessage } from '../../lib/utils';
 
 export default function RegisterPage() {
@@ -25,8 +22,13 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && user)
-      router.replace(isOnboardingCompleted() ? '/dashboard' : '/onboarding');
+    if (!isLoading && user) {
+      if (user.role === 'ADMIN') {
+        router.replace('/dashboard/admin');
+      } else {
+        router.replace('/dashboard/settings');
+      }
+    }
   }, [isLoading, router, user]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -35,20 +37,6 @@ export default function RegisterPage() {
     setIsSubmitting(true);
     try {
       await register(form);
-      trackMetaEvent('CompleteRegistration', {
-        customData: {
-          content_name: 'SaaS account registration',
-          registration_method: 'email',
-          status: 'submitted',
-        },
-        userData: {
-          email: form.email,
-          externalId: form.email,
-          firstName: form.name.split(' ')[0],
-          lastName: form.name.split(' ').slice(1).join(' '),
-          subscriptionId: form.email,
-        },
-      });
     } catch (caughtError) {
       setError(getErrorMessage(caughtError));
     } finally {
@@ -62,31 +50,16 @@ export default function RegisterPage() {
 
   return (
     <AuthShell
-      description="Create a Kodeye workspace with GitHub, or use email if you want to start with manual setup or services."
-      title="Start with Kodeye"
+      description="Buat akun baru untuk mengelola agensi digital Kodeye."
+      title="Create Account"
     >
-      <Button
-        className="w-full"
-        onClick={() => window.location.assign(getApiUrl('/auth/github'))}
-        type="button"
-      >
-        <Github className="h-5 w-5" />
-        Continue with GitHub
-      </Button>
-
-      <div className="my-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-        <span className="h-px flex-1 bg-slate-200" />
-        or use email
-        <span className="h-px flex-1 bg-slate-200" />
-      </div>
-
       <form className="space-y-5" onSubmit={handleSubmit}>
         {error ? <Alert tone="error">{error}</Alert> : null}
         <Input
           id="name"
           label="Name"
           onChange={(event) => setForm({ ...form, name: event.target.value })}
-          placeholder="Your name"
+          placeholder="Nama Lengkap"
           required
           value={form.name}
         />
@@ -125,7 +98,7 @@ export default function RegisterPage() {
           </button>
         </div>
         <Button className="w-full" disabled={isSubmitting} type="submit">
-          {isSubmitting ? 'Creating account...' : 'Create account with email'}
+          {isSubmitting ? 'Creating account...' : 'Create account'}
         </Button>
       </form>
 

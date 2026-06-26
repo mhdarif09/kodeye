@@ -1,6 +1,6 @@
 'use client';
 
-import { Eye, EyeOff, Github } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useEffect, useState } from 'react';
@@ -11,8 +11,6 @@ import { Alert } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { useAuth } from '../../features/auth/use-auth';
-import { getApiUrl } from '../../lib/api-client';
-import { isOnboardingCompleted } from '../../lib/auth-token';
 import { getErrorMessage } from '../../lib/utils';
 
 export default function LoginPage() {
@@ -25,8 +23,13 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && user)
-      router.replace(isOnboardingCompleted() ? '/dashboard' : '/onboarding');
+    if (!isLoading && user) {
+      if (user.role === 'ADMIN') {
+        router.replace('/dashboard/admin');
+      } else {
+        router.replace('/dashboard/settings');
+      }
+    }
   }, [isLoading, router, user]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -48,31 +51,16 @@ export default function LoginPage() {
 
   return (
     <AuthShell
-      description="Sign in with GitHub for repository sync, or use email if you are starting with services or manual setup."
-      title="Continue to Kodeye"
+      description="Masuk ke Kodeye Admin Console untuk mengelola portofolio, tim, dan mitra perusahaan."
+      title="Admin Login"
     >
-      <Button
-        className="w-full"
-        onClick={() => window.location.assign(getApiUrl('/auth/github'))}
-        type="button"
-      >
-        <Github className="h-5 w-5" />
-        Continue with GitHub
-      </Button>
-
-      <div className="my-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-        <span className="h-px flex-1 bg-slate-200" />
-        or use email
-        <span className="h-px flex-1 bg-slate-200" />
-      </div>
-
       <form className="space-y-5" onSubmit={handleSubmit}>
         {error ? <Alert tone="error">{error}</Alert> : null}
         <Input
           id="email"
           label="Email"
           onChange={(event) => setEmail(event.target.value)}
-          placeholder="you@example.com"
+          placeholder="admin@kodeye.net"
           required
           type="email"
           value={email}
@@ -101,17 +89,17 @@ export default function LoginPage() {
           </button>
         </div>
         <Button className="w-full" disabled={isSubmitting} type="submit">
-          {isSubmitting ? 'Signing in...' : 'Sign in with email'}
+          {isSubmitting ? 'Signing in...' : 'Sign in'}
         </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-slate-500">
-        New to Kodeye?{' '}
+        Kembali ke{' '}
         <Link
           className="font-semibold text-brand-600 hover:text-brand-700"
-          href="/register"
+          href="/"
         >
-          Create an account
+          Beranda Website
         </Link>
       </p>
     </AuthShell>

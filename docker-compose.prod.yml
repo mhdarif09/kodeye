@@ -30,10 +30,6 @@ services:
         condition: service_healthy
     ports:
       - '127.0.0.1:3001:3001'
-    volumes:
-      - report_storage:/app/storage/reports
-      - invoice_storage:/app/storage/invoices
-      - ${GITHUB_APP_PRIVATE_KEY_HOST_PATH:-/opt/kodeye/secrets/github-app-private-key.pem}:/run/secrets/github-app-private-key.pem:ro
     healthcheck:
       test:
         [
@@ -81,36 +77,8 @@ services:
     networks:
       - kodeye_internal
 
-  worker:
-    build:
-      context: .
-      dockerfile: infra/docker/worker.Dockerfile
-    env_file:
-      - ${KODEYE_ENV_FILE:-.env.production}
-    environment:
-      SCAN_WORKER_ENABLED: 'true'
-      SCANNER_EXECUTION_MODE: local-cli
-      SCAN_WORKER_TEMP_DIR: /tmp/kodeye/scans
-      SCANNER_STORE_CODE_EVIDENCE: 'false'
-      SCANNER_SEMGREP_INCLUDE_IGNORED: 'true'
-      GIT_SSL_NO_VERIFY: '0'
-    depends_on:
-      mysql:
-        condition: service_healthy
-    volumes:
-      - ${GITHUB_APP_PRIVATE_KEY_HOST_PATH:-/opt/kodeye/secrets/github-app-private-key.pem}:/run/secrets/github-app-private-key.pem:ro
-    tmpfs:
-      - /tmp/kodeye/scans:size=2g,mode=0700,uid=1000,gid=1000
-    security_opt:
-      - no-new-privileges:true
-    restart: unless-stopped
-    networks:
-      - kodeye_internal
-
 volumes:
   mysql_data:
-  report_storage:
-  invoice_storage:
 
 networks:
   kodeye_internal:
